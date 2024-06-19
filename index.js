@@ -44,8 +44,6 @@ app
 
 const port = process.env.PORT || 10000;
 
-console.log(port, " port....");
-
 mongoose
   .connect(process.env[isProdMode ? "MONGODB_PROD_URI" : "MONGODB_DEV_URI"])
   .then(() => {
