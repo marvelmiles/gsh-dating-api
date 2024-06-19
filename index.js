@@ -42,11 +42,13 @@ app
 
 // MONGOOSE SETUP
 
+const port = process.env.PORT || 10000;
+
+console.log(port, " port....");
+
 mongoose
   .connect(process.env[isProdMode ? "MONGODB_PROD_URI" : "MONGODB_DEV_URI"])
   .then(() => {
-    app.listen(process.env.PORT || 8080, (_) =>
-      console.log("Server started..")
-    );
+    app.listen(port, (_) => console.log("Server started.."));
   })
   .catch(console500MSG);
