@@ -49,6 +49,6 @@ console.log(port, " port....");
 mongoose
   .connect(process.env[isProdMode ? "MONGODB_PROD_URI" : "MONGODB_DEV_URI"])
   .then(() => {
-    app.listen(port, (_) => console.log("Server started.."));
+    app.listen(port, (_) => console.log(`Server started on port ${port}..`));
   })
   .catch(console500MSG);
