@@ -36,8 +36,8 @@ app
 
 app
   .use("/api/auth", authRouter)
-  .use("/users", userRouter)
-  .use("/misc", miscRouter)
+  .use("/api/users", userRouter)
+  .use("/api/misc", miscRouter)
   .use(errHandler);
 
 // MONGOOSE SETUP
