@@ -35,7 +35,12 @@ export const appendKeyValue = (path, updateObj, oldObj) => {
     throw `Invalid request: Expect ${path} to be of type Object`;
 
   for (const key in updateObj) {
-    oldObj[`${path}.${key}`] = updateObj[key];
+    const v = updateObj[key];
+
+    if (typeof v !== "string")
+      throw `Invalid request: Expect ${key} to be of type string`;
+
+    oldObj[`${path}.${key}`] = v;
   }
 
   return oldObj;

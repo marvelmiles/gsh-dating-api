@@ -7,7 +7,7 @@ import {
   validateVerificationReason,
   verifyAuthCode,
 } from "../utils/auth.js";
-import { isEmail, isObjectId, isObject } from "../utils/validators.js";
+import { isEmail, isObjectId } from "../utils/validators.js";
 import { readTemplateFile, sendMail } from "../utils/file-handlers.js";
 import { findUser, verifyJWToken } from "../utils/middlewares.js";
 import { createSuccessBody } from "../utils/normalizers.js";
