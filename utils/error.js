@@ -1,7 +1,4 @@
-import {
-  HTTP_CODE_INTERNAL_SERVER_ERROR,
-  HTTP_MULTER_NAME_ERROR,
-} from "../config/constants";
+import { HTTP_MULTER_NAME_ERROR } from "../config/constants";
 
 export const invalidate = (msg, path, name = "ValidationError") => {
   const err = new Error();
@@ -20,6 +17,10 @@ export const getMongooseErrMsg = (err) => {
   for (let i = 0; i < keys.length; i++) {
     let info = obj[keys[i]];
 
+    if (info.reason?.message) {
+      msg += info.reason.message;
+    }
+
     if (info.properties) {
       const prop = info.properties;
       switch (prop.type) {
@@ -31,11 +32,12 @@ export const getMongooseErrMsg = (err) => {
           break;
       }
     }
+
     if (info.toLowerCase)
       msg += msg
         ? `${i === keys.length - 1 ? " and " : ", "}` + info.toLowerCase()
         : info;
-    else msg += err.message;
+    else if (!msg) msg += err.message;
   }
   return msg || err.message;
 };
@@ -62,6 +64,8 @@ export const createError = (
   }
 
   const setDefault = () => {
+    console.log("def");
+
     err.message =
       typeof message === "string" || status
         ? message.message || message

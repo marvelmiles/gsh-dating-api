@@ -16,7 +16,8 @@ import { isDueDate } from "./validators.js";
 export const generateUUID = (format = "auth-code") => {
   switch (format) {
     case "auth-code":
-      return crypto.randomInt(100000, 1000000).toString();
+      return Math.floor(1000 + Math.random() * 9000);
+    // return crypto.randomInt(100000, 1000000).toString();
     default:
       return;
   }

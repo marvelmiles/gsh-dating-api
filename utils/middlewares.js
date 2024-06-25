@@ -70,6 +70,8 @@ export const errHandler = (err, req, res, next) => {
         err.statusCode || err.status
       );
 
+    console.log(err.message, err.status, "dd");
+
     err = err.status
       ? err
       : (err.message ? (err.url = req.url || "-") : true) && createError(err);
@@ -107,9 +109,9 @@ export const findUser = async (req, res = {}, next) => {
     const match = res.match || {};
 
     const message = createError(
-      res.message || HTTP_MSG_UNAUTHORIZE_ACCESS,
-      res.status || 403,
-      res.code || HTTP_CODE_UNAUTHORIZE_ACCESS
+      HTTP_MSG_UNAUTHORIZE_ACCESS,
+      403,
+      HTTP_CODE_UNAUTHORIZE_ACCESS
     );
 
     const email = req.body.email || req.body.placeholder || req.user?.email;

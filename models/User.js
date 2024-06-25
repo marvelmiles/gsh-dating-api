@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { isEmail, isPassword } from "../utils/validators";
 import bcrypt from "bcrypt";
 import { SERVER_ORIGIN } from "../config/constants";
+import { invalidate } from "../utils/error";
 
 const schema = new mongoose.Schema(
   {
@@ -15,7 +16,7 @@ const schema = new mongoose.Schema(
     },
     username: {
       type: String,
-      unique: true,
+      // unique: true,
       required: "Your username or nickname is required",
     },
     email: {
@@ -35,22 +36,15 @@ const schema = new mongoose.Schema(
       set(v) {
         console.log("val set pwd..", v, v.length, this.invalidate);
 
-        if (v.length < 8) {
-          this.invalidate(
-            "password",
-            "Password is shorter than minimum allowed length (8)"
+        if (v.length < 8)
+          throw invalidate(
+            "Password is shorter than minimum allowed length (8)",
+            "password"
           );
-
-          return v;
-        }
 
         const msg = isPassword(v);
 
-        if (msg) {
-          this.invalidate("password", msg);
-
-          return v;
-        }
+        if (msg) throw invalidate(msg, "password");
 
         return bcrypt.hashSync(v, bcrypt.genSaltSync(10));
       },

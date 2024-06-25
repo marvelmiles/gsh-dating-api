@@ -36,7 +36,7 @@ export const isPassword = (password) => {
     msg += msg.length ? ", lowercase" : "Password should contain a lowercase";
 
   if (!hasNumbers)
-    msg += msg.length ? ", number" : "Passwrod should contain a number";
+    msg += msg.length ? ", number" : "Password should contain a number";
 
   if (!hasSymbols)
     msg += msg.length ? ", symbol" : "Password should contain a symbol";

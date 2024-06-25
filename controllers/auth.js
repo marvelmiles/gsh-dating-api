@@ -45,7 +45,7 @@ const mailVerificationToken = async (
           isPwd ? "pwdReset" : "accVerification",
           {
             token,
-            fullname: user.fullname,
+            fullname: user.fullname || "esteemed user",
             verifyLink: isPwd
               ? `${route}/password/${postRoute}`
               : `${route}/account/${postRoute}`,
@@ -354,6 +354,7 @@ export const resetPwd = async (req, res, next) => {
 
     res.json(createSuccessBody(undefined, "Password reset successful"));
   } catch (err) {
+    console.log(err.message, "gk");
     next(err);
   }
 };
