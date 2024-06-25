@@ -102,7 +102,7 @@ export const updateProfileCover = async (req, res, next) => {
         if (url) {
           const prev = oldCovers[index - 1];
 
-          if (oldCovers.length > 1 && !prev)
+          if (!prev)
             throw `Invalid request: Update index ${index} exceeds profile cover size of ${oldCovers.length}`;
 
           oldCovers[index] = url;
