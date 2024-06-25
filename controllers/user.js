@@ -87,11 +87,15 @@ export const updateProfileCover = async (req, res, next) => {
 
     const rules = req.body.rules || req.query.rules;
 
+    let delUrl = [];
+
     if (rules) {
       const { delIndex, updateIndex } = rules;
 
       for (const index of delIndex) {
-        oldCovers.splice(index, 1);
+        const url = oldCovers.splice(index, 1)[0];
+
+        url && delUrl.push(url);
       }
 
       for (const index of updateIndex) {
@@ -108,7 +112,11 @@ export const updateProfileCover = async (req, res, next) => {
           oldCovers[index] = url;
         }
       }
-    } else oldCovers = req.files.map((file) => file.publicUrl);
+    } else {
+      delUrl = oldCovers;
+
+      oldCovers = req.files.map((file) => file.publicUrl);
+    }
 
     user = await User.findByIdAndUpdate(
       userId,
@@ -119,6 +127,10 @@ export const updateProfileCover = async (req, res, next) => {
     );
 
     res.json(createSuccessBody(user));
+
+    for (const url of delUrl) {
+      deleteFile(url);
+    }
   } catch (err) {
     next(err);
   }
