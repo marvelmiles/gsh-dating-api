@@ -5,8 +5,8 @@ export const CLIENT_ORIGIN = isProdMode
   : "http://localhost:3000";
 
 export const SERVER_ORIGIN = isProdMode
-  ? "https://brotherhood-api-8be5.onrender.com"
-  : "http://localhost:8800";
+  ? "https://gsh-dating-api.onrender.com"
+  : "http://localhost:10000";
 
 export const APP_NAME = "SGH Dating";
 
