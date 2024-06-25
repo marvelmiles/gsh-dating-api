@@ -2,8 +2,10 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
+  HTTP_CODE_CODE_EXPIRED,
   HTTP_CODE_UNVERIFIED_EMAIL,
   HTTP_CODE_VALIDATION_ERROR,
+  HTTP_MSG_CODE_EXPIRED,
   HTTP_MSG_INVALID_VERIFICATION_CODE,
   cookieConfig,
 } from "../config/constants.js";
