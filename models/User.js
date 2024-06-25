@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
-import { isEmail, isPassword, isObject } from "../utils/validators";
+import { isEmail, isPassword } from "../utils/validators";
 import bcrypt from "bcrypt";
-import { createError } from "../utils/error";
-import { HTTP_CODE_VALIDATION_ERROR, SERVER_ORIGIN } from "../config/constants";
+import { SERVER_ORIGIN } from "../config/constants";
 
 const schema = new mongoose.Schema(
   {
@@ -34,7 +33,7 @@ const schema = new mongoose.Schema(
       type: String,
       required: "Your password is required",
       set(v) {
-        console.log("val set pwd..", v, this.invalidate);
+        console.log("val set pwd..", v, v.length, this.invalidate);
 
         if (v.length < 8) {
           this.invalidate(
@@ -48,7 +47,7 @@ const schema = new mongoose.Schema(
         const msg = isPassword(v);
 
         if (msg) {
-          this.invalidate("passowrd", msg);
+          this.invalidate("password", msg);
 
           return v;
         }
@@ -57,7 +56,7 @@ const schema = new mongoose.Schema(
       },
     },
     photoUrl: String,
-    coverMedias: {
+    profileCover: {
       type: Array,
       default: [],
     },
@@ -79,33 +78,11 @@ const schema = new mongoose.Schema(
       default: {
         _id: new mongoose.Types.ObjectId(),
       },
-      set(v) {
-        if (!isObject(v)) {
-          const err =
-            "Invalid request body. Expect user bio to be of type Object";
-
-          if (this.invalidate) throw this.invalidate("settings", err);
-          else throw createError(err, 400, HTTP_CODE_VALIDATION_ERROR);
-        }
-
-        return v;
-      },
     },
     settings: {
       type: Object,
       default: {
         _id: new mongoose.Types.ObjectId(),
-      },
-      set(v) {
-        if (!isObject(v)) {
-          const err =
-            "Invalid request body. Expect user settings to be of type Object";
-
-          if (this.invalidate) throw this.invalidate("settings", err);
-          else throw createError(err, 400, HTTP_CODE_VALIDATION_ERROR);
-        }
-
-        return v;
       },
     },
     verifiedAt: Date,

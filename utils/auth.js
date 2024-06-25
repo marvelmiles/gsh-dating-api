@@ -97,8 +97,12 @@ export const verifyAuthCode = async (req, update) => {
 
   validateVerificationReason(req.params.reason, req.user);
 
-  _update.accountExpires = req.user.accountExpires || null;
+  _update.accountExpires = null;
   _update.mailVerifiedAt = req.user.mailVerifiedAt || new Date();
 
   await req.user.updateOne(_update);
+};
+
+export const generateBcryptHash = async (str = "", rounds = 10) => {
+  return await bcrypt.hash(str + "", await bcrypt.genSalt(rounds));
 };

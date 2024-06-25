@@ -8,7 +8,7 @@ import {
   verifyAuthCode,
 } from "../utils/auth.js";
 import { isEmail, isObjectId, isObject } from "../utils/validators.js";
-import { sendMail } from "../utils/file-handlers.js";
+import { readTemplateFile, sendMail } from "../utils/file-handlers.js";
 import { findUser, verifyJWToken } from "../utils/middlewares.js";
 import { createSuccessBody } from "../utils/normalizers.js";
 import {
@@ -20,13 +20,13 @@ import {
   HTTP_MSG_USER_EXISTS,
   HTTP_MSG_CODE_EXPIRED,
   HTTP_CODE_CODE_EXPIRED,
-  HTTP_MSG_UNAUTHORIZED_ACCESS,
+  HTTP_MSG_UNAUTHORIZE_ACCESS,
   HTTP_CODE_UNAUTHORIZE_ACCESS,
   HTTP_CODE_UNVERIFIED_EMAIL,
   PWD_RESET,
 } from "../config/constants.js";
 import { serializeUserToken } from "../utils/serializers.js";
-import { setFutureDate } from "../utils/index.js";
+import { appendKeyValue, setFutureDate } from "../utils/index.js";
 
 const mailVerificationToken = async (
   user,
@@ -92,7 +92,7 @@ const mailVerificationToken = async (
           }
         });
       })
-      .reject(reject);
+      .catch(reject);
   });
 
 export const signup = async (req, res, next) => {
@@ -123,6 +123,48 @@ export const signup = async (req, res, next) => {
     user = await new User(req.body).save();
 
     res.json(await mailVerificationToken(user));
+  } catch (err) {
+    console.log(err?.message, err?.status);
+    next(err);
+  }
+};
+
+export const verifyUserToken = async (req, res, next) => {
+  try {
+    switch (req.params.reason) {
+      case "account":
+        await verifyAuthCode(req);
+
+        res.json(
+          createSuccessBody(undefined, "Account verified successfully!")
+        );
+        break;
+      case "password-reset":
+        await verifyAuthCode(req, {
+          resetToken: PWD_RESET,
+          resetDate: setFutureDate(25, "mins"),
+        });
+
+        res.json(
+          createSuccessBody(
+            undefined,
+            "Password reset code verified successfully!"
+          )
+        );
+        break;
+      default:
+        throw "Invalid request reason. Expect one of account | password-reset";
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const generateUserToken = async (req, res, next) => {
+  try {
+    validateVerificationReason(req.params.reason, req.user);
+
+    res.json(await mailVerificationToken(req.user));
   } catch (err) {
     next(err);
   }
@@ -174,7 +216,7 @@ export const signin = async (req, res, next) => {
 
         if (user.provider)
           throw createError(
-            HTTP_MSG_UNAUTHORIZED_ACCESS,
+            HTTP_MSG_UNAUTHORIZE_ACCESS,
             403,
             HTTP_CODE_UNAUTHORIZE_ACCESS
           );
@@ -210,7 +252,7 @@ export const signin = async (req, res, next) => {
       req.query.rememberMe
     );
 
-    res.json(createSuccessBody({ data: { user } }));
+    res.json(createSuccessBody(user));
   } catch (err) {
     next(err);
   }
@@ -221,26 +263,25 @@ export const signout = async (req, res, next) => {
     deleteCookie(COOKIE_KEY_ACCESS_TOKEN, res);
     deleteCookie(COOKIE_KEY_REFRESH_TOKEN, res);
 
-    res.json(createSuccessBody({ message: "You just got signed out!" }));
+    res.json(createSuccessBody(undefined, "You just got signed out!"));
 
     const user = await User.findByIdAndUpdate(req.user.id, {
       isLogin: false,
     });
 
-    if (user)
+    if (user) {
+      const update = {};
+
+      req.body.settings &&
+        appendKeyValue("settings", req.body.settings, update);
+
       await User.updateOne(
         {
           _id: req.user.id,
         },
-        {
-          settings: isObject(req.body.settings)
-            ? {
-                ...user.settings,
-                ...req.body.settings,
-              }
-            : user.settings,
-        }
+        update
       );
+    }
   } catch (err) {
     next(err);
   }
@@ -256,52 +297,11 @@ export const userExists = async (req, res, next) => {
   }
 };
 
-export const generateUserToken = async (req, res, next) => {
-  try {
-    validateVerificationReason(req.params.reason, req.user);
-
-    res.json(await mailVerificationToken(req.user));
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const verifyUserToken = async (req, res, next) => {
-  try {
-    switch (req.params.reason) {
-      case "account":
-        await verifyAuthCode(req);
-
-        res.json(
-          createSuccessBody(undefined, "Account verified successfully!")
-        );
-        break;
-      case "password-reset":
-        await verifyAuthCode(req, {
-          resetToken: PWD_RESET,
-          resetDate: setFutureDate(25, "mins"),
-        });
-
-        res.json(
-          createSuccessBody(
-            undefined,
-            "Password reset code verified successfully!"
-          )
-        );
-        break;
-      default:
-        throw "Invalid request reason. Expect one of account | password-reset";
-    }
-  } catch (err) {
-    next(err);
-  }
-};
-
 export const recoverPwd = async (req, res, next) => {
   try {
     if (req.user.provider)
       throw createError(
-        HTTP_MSG_UNAUTHORIZED_ACCESS,
+        HTTP_MSG_UNAUTHORIZE_ACCESS,
         403,
         HTTP_CODE_UNAUTHORIZE_ACCESS
       );
@@ -314,12 +314,12 @@ export const recoverPwd = async (req, res, next) => {
 
 export const resetPwd = async (req, res, next) => {
   try {
-    if (!isObjectId(req.params.userId)) throw "Invalid request";
+    if (!isObjectId(req.body.userId)) throw "Invalid request";
 
     if (!req.body.password) throw "Invalid request. New password is required.";
 
     const user = await User.findOne({
-      _id: req.params.userId,
+      _id: req.body.userId,
       resetDate: { $gt: Date.now() },
     });
 
@@ -333,7 +333,7 @@ export const resetPwd = async (req, res, next) => {
 
     if (user.provider)
       throw createError(
-        HTTP_MSG_UNAUTHORIZED_ACCESS,
+        HTTP_MSG_UNAUTHORIZE_ACCESS,
         403,
         HTTP_CODE_UNAUTHORIZE_ACCESS
       );
@@ -341,7 +341,7 @@ export const resetPwd = async (req, res, next) => {
     req.user = user;
     req.params.reason = PWD_RESET;
 
-    if (user.resetToken === "password-reset")
+    if (user.resetToken === PWD_RESET)
       await user.updateOne({
         password: req.body.password,
         resetDate: null,
@@ -372,7 +372,8 @@ export const refreshTokens = async (req, res, next) => {
         SESSION_COOKIE_DURATION.accessToken
       );
     else throw createError(`Forbidden access`, 403);
-    res.json(createSuccessBody(undefined, "Token refreshed"));
+
+    res.json(createSuccessBody(undefined, "Access token refreshed"));
   } catch (err) {
     next(createError(err.message, 403));
   }

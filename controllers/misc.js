@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { MAIL_CONST } from "../config/constants";
 import User from "../models/User";
 import { getAll } from "../utils";
@@ -8,6 +7,10 @@ import { createSearchQuery } from "../utils/serializers";
 
 export const mailFeedback = async (req, res, next) => {
   try {
+    if (!req.body.email) throw "Invalid request: Expect a valid email address";
+
+    if (!req.body.message) throw "Invalid request: Missing message";
+
     sendMail(
       {
         from: req.body.email,
@@ -22,7 +25,9 @@ export const mailFeedback = async (req, res, next) => {
             status: 400,
           });
         else {
-          res.json(createSuccessBody(null, "Thamk you for contacting us!"));
+          res.json(
+            createSuccessBody(undefined, "Thank you for your feedback!")
+          );
         }
       }
     );
@@ -35,10 +40,16 @@ export const search = async (req, res, next) => {
   try {
     const result = {};
 
-    for (const key of req.query.select || ["users"]) {
+    for (const key of req.query.select
+      ? req.query.select.split(" ")
+      : ["users"]) {
       switch (key) {
         case "users":
-          result.users = await getAll(User, req.query, createSearchQuery());
+          result.users = await getAll(
+            User,
+            req.query,
+            createSearchQuery(req.query)
+          );
           continue;
         default:
           throw `Invalid select key ${key}`;

@@ -7,6 +7,7 @@ import { FIREBASE_BUCKET_NAME, storage } from "../config/firebase.js";
 import { MAIL_CONST } from "../config/constants.js";
 import fs from "fs";
 import ejs from "ejs";
+import { isObject } from "./validators.js";
 
 export const deleteFile = (filePath) => {
   if (!filePath) return;
@@ -22,54 +23,96 @@ export const deleteFile = (filePath) => {
     });
 };
 
-export const uploadFile = (config = {}) => {
+export const uploadFile = (
   config = {
     type: "image",
     single: true,
-    defaultFieldName: "avatar",
-    ...config,
-    dirPath: "gsh-" + (config.dirPath || "photos"),
-  };
-
+    name: "avatar",
+    dirPath: "photos",
+    maxCount: 1,
+  }
+) => {
   return [
     (req, res, next) => {
+      const getProp = (field = {}) => ({
+        name: req.query.fieldName || field.name,
+        maxCount: req.query.maxCount || field.maxCount,
+      });
+
+      const prop = getProp(config);
+
       return multer({
         storage: new multer.memoryStorage(),
-      })[config.single ? "single" : "array"](
-        req.query.fieldName || config.defaultFieldName,
-        Number(req.query.maxUpload) || 20
+      })[
+        config.length
+          ? "fields"
+          : (config.single === undefined ? true : config.single)
+          ? "single"
+          : "array"
+      ](
+        config.length ? config.map((field) => getProp(field)) : prop.name,
+        config.length ? undefined : prop.maxCount
       )(req, res, next);
     },
     async (req, res, next) => {
       try {
-        config.maxDur = req.query.maxDur;
-        config.maxSize = req.query.maxSize;
-        if (req.file) req.file = await uploadToFirebase(req.file, config);
+        const applyQueryConfig = (config = {}) => {
+          config.maxDur = req.query.maxDur;
+          config.maxSize = req.query.maxSize;
+          config.dirPath = "gsh-" + (config.dirPath || "photos");
+          config.type = config.type || "image";
+
+          return config;
+        };
+
+        if (req.file)
+          req.file = await uploadToFirebase(req.file, applyQueryConfig(config));
         else if (req.files) {
           const errs = [];
-          for (let i = 0; i < req.files.length; i++) {
-            let file;
-            try {
-              file = req.files[i];
-              req.files[i] = await uploadToFirebase(file, config);
-            } catch (err) {
-              if (req.query.sequentialEffect === "true") throw err;
-              else {
-                errs.push({
-                  message: err.message,
-                  status: err.status,
-                  name: err.name,
-                  code: err.code,
-                  errIndex: i,
-                  file: {
-                    ...file,
-                    buffer: undefined,
-                    stream: undefined,
-                  },
-                });
+
+          const uploadFiles = async (path) => {
+            const files = path ? req.files[path] : req.files;
+
+            for (let i = 0; i < files.length; i++) {
+              let file;
+
+              try {
+                file = files[i];
+
+                const upload = await uploadToFirebase(
+                  file,
+                  applyQueryConfig(config.length ? config[i] : config)
+                );
+
+                if (path) req.files[path][i] = upload;
+                else req.files[i] = upload;
+              } catch (err) {
+                if (req.query.sequentialEffect === "true") throw err;
+                else {
+                  errs.push({
+                    message: err.message,
+                    status: err.status,
+                    name: err.name,
+                    code: err.code,
+                    errIndex: i,
+                    file: {
+                      ...file,
+                      buffer: undefined,
+                      stream: undefined,
+                    },
+                  });
+                }
               }
             }
+          };
+
+          if (req.files.length) await uploadFiles();
+          else {
+            for (const key in req.files) {
+              await uploadFiles(key);
+            }
           }
+
           if (errs.length)
             throw createError({
               name: "customError",
@@ -78,6 +121,7 @@ export const uploadFile = (config = {}) => {
         }
         next();
       } catch (err) {
+        console.log(err.message, "multer....");
         next(err);
       }
     },
@@ -135,6 +179,7 @@ export const uploadToFirebase = (file, config = {}) => {
     config.maxDur > config.maxDurLimit && (config.maxDur = config.maxDurLimit);
 
     const handleError = (err) => {
+      console.log(err.message, "upload file");
       reject(createError(err));
     };
     const uploadFile = (file) => {

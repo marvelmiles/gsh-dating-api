@@ -17,13 +17,13 @@ const authRouter = express.Router();
 
 authRouter
   .post("/signup", uploadFile(), signup)
-  .post("/signin", signin)
-  .patch("/signout", verifyJWToken, signout)
-  .post("/user-exists", userExists)
-  .post("/recover-password", findUser, recoverPwd)
-  .post("/reset-password/:userId", resetPwd)
-  .post("/generate-new-token/:userId/:reason", findUser, generateUserToken)
   .post("/verify-token/:reason", findUser, verifyUserToken)
-  .get("/refresh-token", refreshTokens);
+  .post("/generate-new-token/:reason", findUser, generateUserToken)
+  .post("/signin", signin)
+  .post("/recover-password", findUser, recoverPwd)
+  .post("/reset-password", resetPwd)
+  .get("/refresh-token", refreshTokens)
+  .get("/user-exists/:userId", userExists)
+  .patch("/signout", verifyJWToken, signout);
 
 export default authRouter;

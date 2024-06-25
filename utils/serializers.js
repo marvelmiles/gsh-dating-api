@@ -1,5 +1,5 @@
 import User from "../models/User";
-import { generateUUID } from "./auth";
+import { generateBcryptHash, generateUUID } from "./auth";
 
 export const serializeUserToken = async (
   user,
@@ -33,7 +33,7 @@ export const serializeUserRefferalCode = async (user) => {
   user.referralCode = code;
 };
 
-export const createSearchQuery = (reason = "users", query = {}) => {
+export const createSearchQuery = (query = {}, reason = "users") => {
   const search = query.q
     ? {
         $regex: query.q,
@@ -70,7 +70,28 @@ export const createSearchQuery = (reason = "users", query = {}) => {
           {
             firstname: search,
           },
+          ...(query.bio
+            ? query.bio.split(" ").map((key) => {
+                return {
+                  [`bio.${key.toString()}`]: search,
+                };
+              })
+            : []),
         ],
       };
   }
+};
+
+export const replaceString = (inputString, oldInput, newInput = "") => {
+  const lastIndex = inputString.lastIndexOf(oldInput);
+
+  if (lastIndex !== -1) {
+    return (
+      inputString.substring(0, lastIndex) +
+      newInput +
+      inputString.substring(lastIndex + 1)
+    );
+  }
+
+  return inputString;
 };

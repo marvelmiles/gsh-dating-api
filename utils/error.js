@@ -1,4 +1,7 @@
-import { HTTP_MULTER_NAME_ERROR } from "../config/constants";
+import {
+  HTTP_CODE_INTERNAL_SERVER_ERROR,
+  HTTP_MULTER_NAME_ERROR,
+} from "../config/constants";
 
 export const invalidate = (msg, path, name = "ValidationError") => {
   const err = new Error();
@@ -17,7 +20,6 @@ export const getMongooseErrMsg = (err) => {
   for (let i = 0; i < keys.length; i++) {
     let info = obj[keys[i]];
 
-    // console.log("----", info, typeof info, "-----");
     if (info.properties) {
       const prop = info.properties;
       switch (prop.type) {
@@ -47,7 +49,11 @@ export const console500MSG = (message, name = "LOG", extraMsg = "") =>
     )}] ${message.message} ${extraMsg}. URL:${message.url} at ${new Date()}. `
   );
 
-export const createError = (message, status, code) => {
+export const createError = (
+  message = "Internal server error",
+  status,
+  code
+) => {
   const err = new Error();
 
   if (message.statusCode) {
@@ -123,7 +129,7 @@ export const createError = (message, status, code) => {
     case "multererror":
       switch (message.code && message.code.toLowerCase()) {
         case HTTP_MULTER_NAME_ERROR.toLowerCase():
-          err.message = "File field not found!";
+          err.message = "File field not found or maximum upload exceeded!";
           err.statusCode = 400;
           break;
         default:
@@ -138,12 +144,7 @@ export const createError = (message, status, code) => {
       break;
     default:
       const msg = message.message || message || "";
-      console.error(
-        "error 500... defualting ",
-        msg,
-        keyName,
-        msg.indexOf("getaddrinfo")
-      );
+
       switch (
         (msg.indexOf &&
           msg.toLowerCase().indexOf("getaddrinfo") > -1 &&
