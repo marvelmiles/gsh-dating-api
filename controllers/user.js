@@ -1,7 +1,3 @@
-import {
-  HTTP_CODE_INVALID_USER_ACCOUNT,
-  HTTP_MSG_INVALID_USER_ACCOUNT,
-} from "../config/constants";
 import User from "../models/User";
 import { appendKeyValue, getAll } from "../utils";
 import { deleteFile } from "../utils/file-handlers";
@@ -32,7 +28,8 @@ export const updateUserById = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
-    const { firstname, username, lastname, bio, settings } = req.body;
+    const { firstname, username, lastname, bio, settings, deleteAvatar } =
+      req.body;
 
     let user = req.user;
 
@@ -58,6 +55,14 @@ export const updateUserById = async (req, res, next) => {
     bio && appendKeyValue("bio", bio, update);
 
     settings && appendKeyValue("settings", settings, update);
+
+    if (deleteAvatar) {
+      await deleteFile(user.photoUrl);
+
+      req.file && (await deleteFile(req.file.publicUrl));
+
+      update.photoUrl = "";
+    }
 
     user = await User.findByIdAndUpdate(userId, update, { new: true });
 
