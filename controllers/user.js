@@ -61,6 +61,7 @@ export const updateUserById = async (req, res, next) => {
 
       req.file && (await deleteFile(req.file.publicUrl));
 
+      oldPhotoUrl = undefined;
       update.photoUrl = "";
     }
 
@@ -68,7 +69,7 @@ export const updateUserById = async (req, res, next) => {
 
     res.json(createSuccessBody(user, "Profile updated successfully!"));
 
-    oldPhotoUrl && deleteFile(photoUrl);
+    oldPhotoUrl && deleteFile(oldPhotoUrl);
   } catch (err) {
     next(err);
   }
