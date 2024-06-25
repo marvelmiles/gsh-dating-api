@@ -16,8 +16,8 @@ const schema = new mongoose.Schema(
     },
     username: {
       type: String,
-      // unique: true,
-      required: "Your username or nickname is required",
+      unique: true,
+      // required: "Your username or nickname is required",
     },
     email: {
       type: String,
