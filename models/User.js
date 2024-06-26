@@ -66,7 +66,10 @@ const schema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ["google"],
+      enum: {
+        values: ["google"],
+        message: "{VALUE} is not a valid provider. Accepted values: google",
+      },
     },
     resetToken: String,
     resetDate: Date,
