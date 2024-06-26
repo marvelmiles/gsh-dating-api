@@ -16,7 +16,6 @@ const schema = new mongoose.Schema(
     },
     username: {
       type: String,
-      unique: true,
       // required: "Your username or nickname is required",
     },
     email: {
@@ -32,9 +31,22 @@ const schema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: "Your password is required",
+      required: [
+        function () {
+          return !this.provider;
+        },
+        "Your password is required",
+      ],
       set(v) {
-        console.log("val set pwd..", v, v.length, this.invalidate);
+        console.log(
+          "val set pwd..",
+          v,
+          v.length,
+          this.invalidate,
+          this.provider
+        );
+
+        if (this.provider) return "";
 
         if (v.length < 8)
           throw invalidate(

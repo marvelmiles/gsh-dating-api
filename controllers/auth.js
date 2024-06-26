@@ -6,6 +6,7 @@ import {
   deleteCookie,
   validateVerificationReason,
   verifyAuthCode,
+  generateUUID,
 } from "../utils/auth.js";
 import { isEmail, isObjectId } from "../utils/validators.js";
 import { readTemplateFile, sendMail } from "../utils/file-handlers.js";
@@ -104,8 +105,12 @@ export const signup = async (req, res, next) => {
         HTTP_CODE_INVALID_USER_ACCOUNT
       );
 
+    const conditions = [{ email: req.body.email }];
+
+    if (req.body.username) conditions.push({ username: req.body.username });
+
     let user = await User.findOne({
-      $or: [{ username: req.body.username }, { email: req.body.email }],
+      $or: conditions,
     });
 
     if (user)
@@ -115,16 +120,13 @@ export const signup = async (req, res, next) => {
         HTTP_CODE_INVALID_USER_ACCOUNT
       );
 
-    if (!req.body.password || req.body.password.length < 8)
-      throw createError("A minimum of 8 character password is required");
-
     req.body.photoUrl = req.file?.publicUrl;
 
     user = await new User(req.body).save();
 
     res.json(
-      req.provider
-        ? createSuccessBody(user, "Account setup succesful!")
+      req.body.provider
+        ? createSuccessBody(user, "Account setup successful!")
         : await mailVerificationToken(user)
     );
   } catch (err) {
@@ -176,20 +178,18 @@ export const generateUserToken = async (req, res, next) => {
 
 export const signin = async (req, res, next) => {
   try {
-    const query = {
-      $or: [
-        { email: req.body.placeholder || req.body.email },
-        {
-          username: req.body.placeholder || req.body.username,
-        },
-      ],
-    };
+    const conditions = [{ email: req.body.placeholder || req.body.email }];
 
-    let user = await User.findOne(query);
+    if (req.body.username)
+      conditions.push({
+        username: req.body.placeholder || req.body.username,
+      });
+
+    let user = await User.findOne({
+      $or: conditions,
+    });
 
     const provider = req.body.provider && req.body.provider.toLowerCase();
-
-    let updateUser = false;
 
     const err = createError(
       "Email or password is incorrect",
@@ -204,9 +204,17 @@ export const signin = async (req, res, next) => {
             throw createError(
               `Sorry only one account can use the email address ${req.body.email}.`
             );
+        } else {
+          if (req.body.username) {
+            // a more uniq approach
+            // get all user based on this provider
+            // generate a uniq start index for the first user and iterate
+            // on that index for other users.
+            req.body.username = username + provider;
+          }
 
-          updateUser = true;
-        } else user = await new User(req.body).save();
+          user = await new User(req.body).save();
+        }
         break;
       default:
         if (!user) throw err;
@@ -236,7 +244,6 @@ export const signin = async (req, res, next) => {
       { _id: user.id },
       {
         isLogin: true,
-        ...(updateUser ? user : undefined),
       },
       { new: true }
     );
