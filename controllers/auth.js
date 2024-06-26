@@ -122,7 +122,11 @@ export const signup = async (req, res, next) => {
 
     user = await new User(req.body).save();
 
-    res.json(await mailVerificationToken(user));
+    res.json(
+      req.provider
+        ? createSuccessBody(user, "Account setup succesful!")
+        : await mailVerificationToken(user)
+    );
   } catch (err) {
     console.log(err?.message, err?.status);
     next(err);
