@@ -6,6 +6,7 @@ import {
   deleteCookie,
   validateVerificationReason,
   verifyAuthCode,
+  generateUUID,
 } from "../utils/auth.js";
 import { isEmail, isObjectId } from "../utils/validators.js";
 import { readTemplateFile, sendMail } from "../utils/file-handlers.js";
@@ -27,7 +28,7 @@ import {
 } from "../config/constants.js";
 import { serializeUserToken } from "../utils/serializers.js";
 import { appendKeyValue, setFutureDate } from "../utils/index.js";
-import { getUserEssentials } from "../utils/user.js";
+import { generateUsername, getUserEssentials } from "../utils/user.js";
 
 const mailVerificationToken = async (
   user,
@@ -109,7 +110,10 @@ export const signup = async (req, res, next) => {
 
     const conditions = [{ email: body.email }];
 
-    if (body.username) conditions.push({ username: body.username });
+    if (body.username) {
+      if (body.provider) body.username = await generateUsername(body.username);
+      else conditions.push({ username: body.username });
+    }
 
     let user = await User.findOne({
       $or: conditions,
@@ -182,7 +186,7 @@ export const signin = async (req, res, next) => {
   try {
     const conditions = [{ email: req.body.placeholder || req.body.email }];
 
-    if (req.body.username)
+    if (req.body.username && !req.body.provider)
       conditions.push({
         username: req.body.placeholder || req.body.username,
       });
@@ -207,13 +211,8 @@ export const signin = async (req, res, next) => {
               `Sorry only one account can use the email address ${req.body.email}.`
             );
         } else {
-          if (req.body.username) {
-            // a more uniq approach
-            // get all user based on this provider
-            // generate a uniq start index for the first user and iterate
-            // on that index for other users.
-            req.body.username = username + provider;
-          }
+          if (req.body.username)
+            req.body.username = await generateUsername(req.body.username);
 
           const update = getUserEssentials(req.body);
 
