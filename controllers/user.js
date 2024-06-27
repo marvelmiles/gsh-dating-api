@@ -1,8 +1,9 @@
 import User from "../models/User";
-import { appendKeyValue, getAll } from "../utils";
+import { getAll } from "../utils";
 import { deleteFile } from "../utils/file-handlers";
 import { createSuccessBody } from "../utils/normalizers";
 import { createSearchQuery } from "../utils/serializers";
+import { appendUserKeyValue } from "../utils/user";
 
 export const getUserById = async (req, res, next) => {
   try {
@@ -28,14 +29,13 @@ export const updateUserById = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
-    const { firstname, username, lastname, bio, settings, deleteAvatar } =
-      req.body;
+    const { firstname, username, lastname, deleteAvatar, photoUrl } = req.body;
 
     let user = req.user;
 
     let oldPhotoUrl;
 
-    let newPhotoUrl = user.photoUrl;
+    let newPhotoUrl = photoUrl || user.photoUrl;
 
     if (req.file?.publicUrl) {
       oldPhotoUrl = user.photoUrl;
@@ -52,9 +52,7 @@ export const updateUserById = async (req, res, next) => {
       photoUrl: newPhotoUrl,
     };
 
-    bio && appendKeyValue("bio", bio, update);
-
-    settings && appendKeyValue("settings", settings, update);
+    appendUserKeyValue(req.body, update);
 
     if (deleteAvatar) {
       await deleteFile(user.photoUrl);

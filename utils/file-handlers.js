@@ -7,7 +7,6 @@ import { FIREBASE_BUCKET_NAME, storage } from "../config/firebase.js";
 import { MAIL_CONST } from "../config/constants.js";
 import fs from "fs";
 import ejs from "ejs";
-import { isObject } from "./validators.js";
 
 export const deleteFile = (filePath) => {
   if (!filePath) return;

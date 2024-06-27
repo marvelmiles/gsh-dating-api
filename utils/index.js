@@ -31,14 +31,16 @@ export const setFutureDate = (number, format = "day", date = new Date()) => {
 };
 
 export const appendKeyValue = (path, updateObj, oldObj) => {
+  if (updateObj === undefined) return oldObj;
+
   if (!isObject(updateObj))
     throw `Invalid request: Expect ${path} to be of type Object`;
 
   for (const key in updateObj) {
     const v = updateObj[key];
 
-    if (typeof v !== "string")
-      throw `Invalid request: Expect ${key} to be of type string`;
+    if (typeof v === "function" || typeof v === "symbol")
+      throw `Invalid request: Expect ${key} to be of primitive type`;
 
     oldObj[`${path}.${key}`] = v;
   }

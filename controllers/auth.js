@@ -6,7 +6,6 @@ import {
   deleteCookie,
   validateVerificationReason,
   verifyAuthCode,
-  generateUUID,
 } from "../utils/auth.js";
 import { isEmail, isObjectId } from "../utils/validators.js";
 import { readTemplateFile, sendMail } from "../utils/file-handlers.js";
@@ -28,6 +27,7 @@ import {
 } from "../config/constants.js";
 import { serializeUserToken } from "../utils/serializers.js";
 import { appendKeyValue, setFutureDate } from "../utils/index.js";
+import { getUserEssentials } from "../utils/user.js";
 
 const mailVerificationToken = async (
   user,
@@ -98,16 +98,18 @@ const mailVerificationToken = async (
 
 export const signup = async (req, res, next) => {
   try {
-    if (!isEmail(req.body.email))
+    const body = getUserEssentials(req.body);
+
+    if (!isEmail(body.email))
       throw createError(
         "Account email address is invalid",
         400,
         HTTP_CODE_INVALID_USER_ACCOUNT
       );
 
-    const conditions = [{ email: req.body.email }];
+    const conditions = [{ email: body.email }];
 
-    if (req.body.username) conditions.push({ username: req.body.username });
+    if (body.username) conditions.push({ username: body.username });
 
     let user = await User.findOne({
       $or: conditions,
@@ -120,12 +122,12 @@ export const signup = async (req, res, next) => {
         HTTP_CODE_INVALID_USER_ACCOUNT
       );
 
-    req.body.photoUrl = req.file?.publicUrl;
+    if (req.file?.publicUrl) body.photoUrl = req.file.publicUrl;
 
-    user = await new User(req.body).save();
+    user = await new User(body).save();
 
     res.json(
-      req.body.provider
+      body.provider
         ? createSuccessBody(user, "Account setup successful!")
         : await mailVerificationToken(user)
     );
@@ -189,7 +191,7 @@ export const signin = async (req, res, next) => {
       $or: conditions,
     });
 
-    const provider = req.body.provider && req.body.provider.toLowerCase();
+    const provider = req.body.provider;
 
     const err = createError(
       "Email or password is incorrect",
@@ -213,7 +215,11 @@ export const signin = async (req, res, next) => {
             req.body.username = username + provider;
           }
 
-          user = await new User(req.body).save();
+          const update = getUserEssentials(req.body);
+
+          delete update.photoUrl;
+
+          user = await new User(update).save();
         }
         break;
       default:
@@ -274,25 +280,20 @@ export const signout = async (req, res, next) => {
     deleteCookie(COOKIE_KEY_ACCESS_TOKEN, res);
     deleteCookie(COOKIE_KEY_REFRESH_TOKEN, res);
 
-    res.json(createSuccessBody(undefined, "You just got signed out!"));
-
-    const user = await User.findByIdAndUpdate(req.user.id, {
+    const update = {
       isLogin: false,
-    });
+    };
 
-    if (user) {
-      const update = {};
+    req.body.settings && appendKeyValue("settings", req.body.settings, update);
 
-      req.body.settings &&
-        appendKeyValue("settings", req.body.settings, update);
+    await User.updateOne(
+      {
+        _id: req.user.id,
+      },
+      update
+    );
 
-      await User.updateOne(
-        {
-          _id: req.user.id,
-        },
-        update
-      );
-    }
+    res.json(createSuccessBody(undefined, "You just got signed out!"));
   } catch (err) {
     next(err);
   }
