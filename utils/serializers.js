@@ -1,5 +1,6 @@
 import User from "../models/User";
 import { generateBcryptHash, generateUUID } from "./auth";
+import { isObjectId } from "./validators";
 
 export const serializeUserToken = async (
   user,
@@ -50,9 +51,10 @@ export const createSearchQuery = (query = {}, reason = "users") => {
       return {
         ...match,
         _id: {
-          $ne: query.searchUid
-            ? new mongoose.Types.ObjectId(query.searchUid)
-            : undefined,
+          $ne:
+            query.searchUid && isObjectId(query.searchUid)
+              ? query.searchUid
+              : undefined,
         },
         $or: [
           {

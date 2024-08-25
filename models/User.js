@@ -149,7 +149,8 @@ const schema = new Schema(
 );
 
 schema.virtual("fullname").get(function () {
-  return this.firstname + " " + this.lastname;
+  if (this.firstname || this.lastname)
+    return ((this.firstname || "") + " " + (this.lastname || "")).trim();
 });
 
 schema.virtual("referralLink").get(function () {

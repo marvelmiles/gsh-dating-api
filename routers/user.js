@@ -18,11 +18,11 @@ userRouter
     verifyJWToken,
     findUser,
     uploadFile({
-      name: "profile-cover",
+      name: "profileCover",
       dirPath: "profile-covers",
       type: "medias",
       single: false,
-      maxCount: 5,
+      maxCount: 6,
     }),
     updateProfileCover
   )

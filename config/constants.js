@@ -5,7 +5,7 @@ export const CLIENT_ORIGIN = isProdMode
   : "http://localhost:3000";
 
 export const SERVER_ORIGIN = isProdMode
-  ? "https://gsh-dating-api.onrender.com"
+  ? "https://sgh-dating-api.glitch.me"
   : "http://localhost:10000";
 
 export const APP_NAME = "SGH Dating";
@@ -31,6 +31,8 @@ export const HTTP_CODE_INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
 export const MAIL_CONST = {
   user: "caltextrader@gmail.com",
 };
+
+export const HTTP_CODE_MAIL_ERROR = "_MAIL_ERROR";
 
 export const HTTP_MSG_INVALID_VERIFICATION_CODE = "Invalid verification code!";
 
@@ -65,9 +67,12 @@ export const SESSION_COOKIE_DURATION = {
 };
 
 export const cookieConfig = {
-  httpOnly: true,
-  sameSite: "Strict",
-  secure: isProdMode,
+  httpOnly: false,
+  sameSite: "None",
+  secure: true, // Must be true for SameSite=None
+  path: "/",
 };
 
 export const PWD_RESET = "password-reset";
+
+export const HTTP_MSG_403 = "Forbidden access. Please login again";

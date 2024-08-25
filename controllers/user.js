@@ -83,29 +83,50 @@ export const updateProfileCover = async (req, res, next) => {
 
     let oldCovers = user.profileCover.slice();
 
-    const rules = req.body.rules || req.query.rules;
+    const rules =
+      (req.body.rules ? JSON.parse(req.body.rules) : null) || req.query.rules;
 
     let delUrl = [];
 
-    if (rules) {
-      const { delIndex, updateIndex } = rules;
+    const strictMode = typeof req.query.strictMode
+      ? req.query.strictMode
+      : true;
 
-      for (const index of delIndex) {
+    if (rules) {
+      const { delIndex = [], updateIndex = {} } = rules;
+
+      for (let index of delIndex) {
+        index = Number(index);
+
+        if (isNaN(index)) throw `Invalid delete index ${index}`;
+
         const url = oldCovers.splice(index, 1)[0];
 
         url && delUrl.push(url);
       }
+      
 
-      for (const index of updateIndex) {
-        const file = req.files[index];
+      for (let index in updateIndex) {
+        index = Number(index);
+
+        const filePos = Number(updateIndex[index]);
+
+        if (isNaN(index) || isNaN(filePos))
+          throw `Invalid update index key value pair should be of type integer ${index}`;
+
+        const file = req.files[filePos];
 
         const url = file?.publicUrl;
 
         if (url) {
           const prev = oldCovers[index - 1];
 
-          if (!prev)
+          if (strictMode && index && !prev)
             throw `Invalid request: Update index ${index} exceeds profile cover size of ${oldCovers.length}`;
+
+          const oldUrl = oldCovers[index];
+
+          if (oldUrl) delUrl.push(oldUrl);
 
           oldCovers[index] = url;
         }

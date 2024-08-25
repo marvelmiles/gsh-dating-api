@@ -1,22 +1,35 @@
 import { isObject } from "./validators";
 
 export const getAll = async (model, reqQuery, match) => {
-  const page = parseInt(reqQuery.page) || 1;
-  const size = parseInt(reqQuery.size) || 10;
+  return new Promise(async (resolve, reject) => {
+    const page = parseInt(reqQuery.page) || 1;
+    const size = parseInt(reqQuery.size) || 10;
 
-  const totalDocs = await model.countDocuments(match);
-  const totalPages = Math.ceil(totalDocs / size);
+    const totalDocs = await model.countDocuments(match);
+    const totalPages = Math.ceil(totalDocs / size);
 
-  const data = await model
-    .find(match)
-    .skip((page - 1) * size)
-    .limit(size);
+    const pipeline = [
+      { $match: match },
+      { $sort: { _id: -1 } },
+      { $skip: (page - 1) * size },
+      { $limit: size },
+    ];
 
-  return {
-    totalDocs,
-    totalPages,
-    data,
-  };
+    const randomize = reqQuery.type === "similar";
+
+    // if (randomize) pipeline.push({ $sample: { size: size } });
+
+    const data = await model.aggregate(pipeline);
+
+    setTimeout(() => {
+      return resolve({
+        totalDocs,
+        totalPages,
+        currentPage: page,
+        data,
+      });
+    }, 3000);
+  });
 };
 
 export const setFutureDate = (number, format = "day", date = new Date()) => {

@@ -6,7 +6,6 @@ import {
   deleteCookie,
   validateVerificationReason,
   verifyAuthCode,
-  generateUUID,
 } from "../utils/auth.js";
 import { isEmail, isObjectId } from "../utils/validators.js";
 import { readTemplateFile, sendMail } from "../utils/file-handlers.js";
@@ -25,6 +24,7 @@ import {
   HTTP_CODE_UNAUTHORIZE_ACCESS,
   HTTP_CODE_UNVERIFIED_EMAIL,
   PWD_RESET,
+  HTTP_CODE_MAIL_ERROR,
 } from "../config/constants.js";
 import { serializeUserToken } from "../utils/serializers.js";
 import { appendKeyValue, setFutureDate } from "../utils/index.js";

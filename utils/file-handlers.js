@@ -120,7 +120,6 @@ export const uploadFile = (
         }
         next();
       } catch (err) {
-        console.log(err.message, "multer....");
         next(err);
       }
     },
@@ -178,7 +177,6 @@ export const uploadToFirebase = (file, config = {}) => {
     config.maxDur > config.maxDurLimit && (config.maxDur = config.maxDurLimit);
 
     const handleError = (err) => {
-      console.log(err.message, "upload file");
       reject(createError(err));
     };
     const uploadFile = (file) => {

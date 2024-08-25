@@ -4,7 +4,7 @@ import { deleteFile } from "./file-handlers.js";
 import {
   CLIENT_ORIGIN,
   HTTP_MSG_UNAUTHORIZE_ACCESS,
-  HTTP_403_MSG,
+  HTTP_MSG_403,
   HTTP_CODE_UNAUTHORIZE_ACCESS,
 } from "../config/constants.js";
 import { isObjectId } from "./validators.js";
@@ -22,8 +22,12 @@ export const verifyJWToken = (req, res = {}, next) => {
 
   const status = applyRefresh ? 403 : 401;
   const throwErr = next === undefined;
+
   if (!token) {
-    const err = createError(HTTP_MSG_UNAUTHORIZE_ACCESS, status);
+    const err = createError(
+      applyRefresh ? HTTP_MSG_403 : HTTP_MSG_UNAUTHORIZE_ACCESS,
+      status
+    );
     if (throwErr) throw err;
     else next(err);
     return;
@@ -32,7 +36,7 @@ export const verifyJWToken = (req, res = {}, next) => {
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
       err = createError(
-        applyRefresh ? HTTP_403_MSG : HTTP_MSG_UNAUTHORIZE_ACCESS,
+        applyRefresh ? HTTP_MSG_403 : HTTP_MSG_UNAUTHORIZE_ACCESS,
         status
       );
       if (throwErr) throw err;
@@ -42,6 +46,7 @@ export const verifyJWToken = (req, res = {}, next) => {
 
     req.user = user;
     req.body && delete req.body._id;
+
     !throwErr && next();
   });
 };
@@ -69,8 +74,6 @@ export const errHandler = (err, req, res, next) => {
         },
         err.statusCode || err.status
       );
-
-    console.log(err.message, err.status, "dd");
 
     err = err.status
       ? err

@@ -1,12 +1,5 @@
 import { HTTP_MULTER_NAME_ERROR } from "../config/constants";
 
-export const invalidate = (msg, path, name = "ValidationError") => {
-  const err = new Error();
-  err.message = msg;
-  err.name = name;
-  err.path = path;
-  throw err;
-};
 
 export const getMongooseErrMsg = (err) => {
   let msg = "";
