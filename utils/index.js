@@ -1,4 +1,4 @@
-import { isObject } from "./validators";
+import { isObject, isProdMode } from "./validators";
 
 export const getAll = async (model, reqQuery, match) => {
   return new Promise(async (resolve, reject) => {
@@ -24,7 +24,7 @@ export const getAll = async (model, reqQuery, match) => {
           password: 0,
         },
       },
-    ]; 
+    ];
 
     const randomize = reqQuery.type === "similar";
 
@@ -32,14 +32,17 @@ export const getAll = async (model, reqQuery, match) => {
 
     const data = await model.aggregate(pipeline);
 
-    setTimeout(() => {
-      return resolve({
-        totalDocs,
-        totalPages,
-        currentPage: page,
-        data,
-      });
-    }, 3000);
+    setTimeout(
+      () => {
+        return resolve({
+          totalDocs,
+          totalPages,
+          currentPage: page,
+          data,
+        });
+      },
+      isProdMode ? 0 : 3000
+    );
   });
 };
 
