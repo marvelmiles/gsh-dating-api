@@ -1,7 +1,7 @@
 import { isProdMode } from "../utils/validators";
 
 export const CLIENT_ORIGIN = isProdMode
-  ? "https://localhost:3000"
+  ? "https://sgh-dating-ui.vercel.app"
   : "http://localhost:3000";
 
 export const SERVER_ORIGIN = isProdMode

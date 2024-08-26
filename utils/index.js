@@ -13,7 +13,18 @@ export const getAll = async (model, reqQuery, match) => {
       { $sort: { _id: -1 } },
       { $skip: (page - 1) * size },
       { $limit: size },
-    ];
+      {
+        $addFields: {
+          id: "$_id",
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          password: 0,
+        },
+      },
+    ]; 
 
     const randomize = reqQuery.type === "similar";
 

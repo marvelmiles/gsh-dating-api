@@ -101,14 +101,14 @@ const schema = new Schema(
     mailVerifiedAt: {
       type: Date,
       default: function () {
-        if (this.provider) return new Date();
+        if (this.provider || true) return new Date();
         else return null;
       },
     },
     accountExpires: {
       type: Date,
       default: function () {
-        if (this.provider) return null;
+        if (this.provider || true) return null;
 
         return Date.now() + 7 * 24 * 60 * 60 * 1000; // after 7d;
       },

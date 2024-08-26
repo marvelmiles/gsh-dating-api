@@ -74,12 +74,7 @@ const mailVerificationToken = async (
             user
               .save()
               .then(() => {
-                resolve(
-                  createSuccessBody(
-                    isPwd ? undefined : { id: user.id },
-                    successMsg
-                  )
-                );
+                resolve(createSuccessBody({ id: user.id }, successMsg));
               })
               .catch((err) => {
                 console500MSG(err, "SIGNUP_ERROR");
@@ -130,11 +125,13 @@ export const signup = async (req, res, next) => {
 
     user = await new User(body).save();
 
-    res.json(
-      body.provider
-        ? createSuccessBody(user, "Account setup successful!")
-        : await mailVerificationToken(user)
-    );
+    res.json(createSuccessBody(user, "Account setup successful!"));
+
+    // res.json(
+    //   body.provider
+    //     ? createSuccessBody(user, "Account setup successful!")
+    //     : await mailVerificationToken(user)
+    // );
   } catch (err) {
     console.log(err?.message, err?.status);
     next(err);

@@ -70,13 +70,18 @@ export const createSearchQuery = (query = {}, reason = "users") => {
             email: search,
           },
           {
-            firstname: search,
+            fullname: search,
           },
           ...(query.bio
             ? query.bio.split(" ").map((key) => {
                 return {
                   [`bio.${key.toString()}`]: search,
                 };
+              })
+            : []),
+          ...(query.filter
+            ? Object.keys(query.filter).map((key) => {
+                return { [`bio.${key}`]: query.filter[key] };
               })
             : []),
         ],
