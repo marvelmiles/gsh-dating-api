@@ -1,3 +1,4 @@
+import { toObj } from ".";
 import User from "../models/User";
 import { generateBcryptHash, generateUUID } from "./auth";
 import { isObjectId } from "./validators";
@@ -48,7 +49,39 @@ export const createSearchQuery = (query = {}, reason = "users") => {
 
   switch (reason) {
     case "users":
-      return {
+      const rules = query.q
+        ? [
+            {
+              firstname: search,
+            },
+            {
+              lastname: search,
+            },
+            {
+              username: search,
+            },
+            {
+              fullname: search,
+            },
+          ]
+        : [];
+
+      const bioRules = query.bio
+        ? query.bio.split(" ").map((key) => {
+            return {
+              [`bio.${key.toString()}`]: search,
+            };
+          })
+        : [];
+
+      const bioFilterRules = query.filter
+        ? Object.keys(query.filter).map((key) => {
+            return {
+              [`bio.${key}`]: query.filter[key],
+            };
+          })
+        : [];
+      const _rules = {
         ...match,
         _id: {
           $ne:
@@ -56,36 +89,22 @@ export const createSearchQuery = (query = {}, reason = "users") => {
               ? query.searchUid
               : undefined,
         },
-        $or: [
-          {
-            firstname: search,
-          },
-          {
-            lastname: search,
-          },
-          {
-            username: search,
-          },
-          {
-            email: search,
-          },
-          {
-            fullname: search,
-          },
-          ...(query.bio
-            ? query.bio.split(" ").map((key) => {
-                return {
-                  [`bio.${key.toString()}`]: search,
-                };
-              })
-            : []),
-          ...(query.filter
-            ? Object.keys(query.filter).map((key) => {
-                return { [`bio.${key}`]: query.filter[key] };
-              })
-            : []),
-        ],
+        ...(query?.mandatory?.filter || query.strictFilter
+          ? toObj(bioFilterRules)
+          : {}),
+        ...(query.strictFilter ? toObj(bioRules) : {}),
+        ...(query.strictFilter ? toObj(rules) : {}),
+        $or: [],
       };
+
+      if (query.strictFilter ? false : !query?.mandatory?.filter)
+        _rules.$or = _rules.$or.concat(bioFilterRules);
+
+      if (!query.strictFilter) _rules.$or = _rules.$or.concat(rules, bioRules);
+
+      if (!_rules.$or.length) delete _rules.$or;
+
+      return _rules;
   }
 };
 

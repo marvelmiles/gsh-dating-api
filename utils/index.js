@@ -74,3 +74,16 @@ export const appendKeyValue = (path, updateObj, oldObj) => {
 
   return oldObj;
 };
+
+export const toObj = (arr) => {
+  let obj = {};
+
+  for (const item of arr) {
+    obj = {
+      ...obj,
+      ...item,
+    };
+  }
+
+  return obj;
+};
