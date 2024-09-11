@@ -13,7 +13,6 @@ import { findUser, verifyJWToken } from "../utils/middlewares.js";
 import { createSuccessBody } from "../utils/normalizers.js";
 import {
   HTTP_CODE_INVALID_USER_ACCOUNT,
-  CLIENT_ORIGIN,
   SESSION_COOKIE_DURATION,
   COOKIE_KEY_ACCESS_TOKEN,
   COOKIE_KEY_REFRESH_TOKEN,
@@ -27,11 +26,12 @@ import {
   HTTP_CODE_MAIL_ERROR,
 } from "../config/constants.js";
 import { serializeUserToken } from "../utils/serializers.js";
-import { appendKeyValue, setFutureDate } from "../utils/index.js";
+import { appendKeyValue, getClientUrl, setFutureDate } from "../utils/index.js";
 import { generateUsername, getUserEssentials } from "../utils/user.js";
 
 const mailVerificationToken = async (
   user,
+  CLIENT_ORIGIN,
   isPwd = false,
   errMsg,
   successMsg = "A verification code as been sent to your mail!"
@@ -43,51 +43,65 @@ const mailVerificationToken = async (
 
         const postRoute = `${user.id}`;
 
-        const mailStr = readTemplateFile(
-          isPwd ? "pwdReset" : "accVerification",
-          {
-            token,
-            fullname: user.fullname || "esteemed user",
-            verifyLink: isPwd
-              ? `${route}/password/${postRoute}`
-              : `${route}/account/${postRoute}`,
-          }
-        );
+        console.log(CLIENT_ORIGIN, "mail origin....");
 
-        const mailOptions = {
-          to: user.email,
-          subject: isPwd
-            ? "GSH account password Reset"
-            : "GSH account verification",
-          html: mailStr,
-          text: mailStr,
+        const templateData = {
+          token,
+          fullname: user.fullname || "esteemed user",
+          verifyLink: isPwd
+            ? `${route}/password/${postRoute}`
+            : `${route}/account/${postRoute}`,
+          appClientHref: CLIENT_ORIGIN,
         };
 
-        sendMail(mailOptions, (err) => {
-          if (err)
-            reject(
-              errMsg ? createError(errMsg, 503, HTTP_CODE_MAIL_ERROR) : err
-            );
-          else {
-            user.resetDate = Date.now() + 60 * 1000 * 25;
+        if (CLIENT_ORIGIN.toLowerCase().indexOf("breezeup") === -1) {
+          templateData.appName = "Soulmater";
+          templateData.supportMail = "soulmater@supoort.com";
+        } else {
+          templateData.appName = "Breezeup";
+          templateData.supportMail = "breezeup@supoort.com";
+        }
 
-            user
-              .save()
-              .then(() => {
-                resolve(createSuccessBody({ id: user.id }, successMsg));
-              })
-              .catch((err) => {
-                console500MSG(err, "SIGNUP_ERROR");
+        const mailStr = readTemplateFile(
+          isPwd ? "pwdReset" : "accVerification",
+          templateData
+        );
 
-                reject(
-                  createError(
-                    "Something went wrong! Failed to save token.",
-                    500
-                  )
-                );
-              });
+        sendMail(
+          {
+            to: user.email,
+            html: mailStr,
+            text: mailStr,
+            subject: isPwd
+              ? `${templateData.appName} account password Reset`
+              : `${templateData.appName} account verification`,
+          },
+          (err) => {
+            if (err)
+              reject(
+                errMsg ? createError(errMsg, 503, HTTP_CODE_MAIL_ERROR) : err
+              );
+            else {
+              user.resetDate = Date.now() + 60 * 1000 * 25;
+
+              user
+                .save()
+                .then(() => {
+                  resolve(createSuccessBody({ id: user.id }, successMsg));
+                })
+                .catch((err) => {
+                  console500MSG(err, "SIGNUP_ERROR");
+
+                  reject(
+                    createError(
+                      "Something went wrong! Failed to save token.",
+                      500
+                    )
+                  );
+                });
+            }
           }
-        });
+        );
       })
       .catch(reject);
   });
@@ -173,7 +187,7 @@ export const generateUserToken = async (req, res, next) => {
   try {
     validateVerificationReason(req.params.reason, req.user);
 
-    res.json(await mailVerificationToken(req.user));
+    res.json(await mailVerificationToken(req.user, getClientUrl(req)));
   } catch (err) {
     next(err);
   }
@@ -314,7 +328,7 @@ export const recoverPwd = async (req, res, next) => {
         HTTP_CODE_UNAUTHORIZE_ACCESS
       );
 
-    res.json(await mailVerificationToken(req.user, true));
+    res.json(await mailVerificationToken(req.user, getClientUrl(req), true));
   } catch (err) {
     next(err);
   }

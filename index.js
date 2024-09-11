@@ -4,12 +4,12 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import queryType from "query-types";
-import { isProdMode } from "./utils/validators";
 import { console500MSG } from "./utils/error";
 import { errHandler, validateCors } from "./utils/middlewares";
 import authRouter from "./routers/auth";
 import miscRouter from "./routers/misc";
 import userRouter from "./routers/user";
+import { isProdMode } from "./config/constants";
 
 // CONFIGURATIONS
 

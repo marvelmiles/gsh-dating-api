@@ -104,7 +104,6 @@ export const updateProfileCover = async (req, res, next) => {
 
         url && delUrl.push(url);
       }
-      
 
       for (let index in updateIndex) {
         index = Number(index);

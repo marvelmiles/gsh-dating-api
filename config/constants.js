@@ -1,8 +1,13 @@
-import { isProdMode } from "../utils/validators";
+export const allowedOrigins = [
+  "https://www.breezeup.me",
+  "https://sgh-dating-ui.vercel.app/",
+  "https://sgh-dating-app.netlify.app/",
+  "http://localhost:3000",
+];
 
-export const CLIENT_ORIGIN = isProdMode
-  ? "https://sgh-dating-ui.vercel.app"
-  : "http://localhost:3000";
+export const isProdMode =
+  process.env.NODE_ENV === "production" ||
+  process.env.ENVIRONMENT === "production";
 
 export const SERVER_ORIGIN = isProdMode
   ? "https://sgh-dating-api.glitch.me"

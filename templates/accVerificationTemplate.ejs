@@ -99,21 +99,15 @@
             <table style="width: 100%; max-width: 620px; margin: 0 auto">
               <tbody>
                 <tr>
-                  <td style="text-align: center; padding-bottom: 25px">
-                    <a href="#"
+                  <td style="text-align: center">
+                    <!-- <a href="#"
                       ><img
                         style="height: 100px; width: 100%"
                         src="https://firebasestorage.googleapis.com/v0/b/caltex-api.appspot.com/o/Mail%20Banner.png?alt=media&token=69519bd3-e5d8-4be1-96f7-6a4af1f1e2cb&_gl=1*1k5iyx9*_ga*MTg2NTExMTI3LjE2NjYyMTA2ODI.*_ga_CW55HF8NVT*MTY5Nzg3Njg5NS4zMy4xLjE2OTc4NzcwMTIuMTYuMC4w"
                         alt="logo"
-                    /></a>
-                    <p
-                      style="
-                        font-size: 14px;
-                        color: <%= primaryColor %>;
-                        padding-top: 12px;
-                      "
-                    >
-                      GSH Mail Service
+                    /></a> -->
+                    <p style="font-size: 14px; color: <%= primaryColor %>">
+                      <%= appName %> Mail Service
                     </p>
                   </td>
                 </tr>
@@ -224,7 +218,7 @@
                     >
                       This is an automatically generated email please do not
                       reply to this email. If you face any issues, please
-                      contact us at gsh@support.com
+                      contact us at <%= supportMail %>
                     </p>
                   </td>
                 </tr>
@@ -235,16 +229,16 @@
                 <tr>
                   <td style="text-align: center; padding: 25px 20px 0">
                     <p style="font-size: 13px">
-                      Copyright ©<%= new Date().getFullYear() %> GSH. All rights
-                      reserved. <br />
+                      Copyright ©<%= new Date().getFullYear() %> <%= appName %>.
+                      All rights reserved. <br />
                       Template Made By
                       <a
                         style="
                           color: <%= primaryColor %>;
                           text-decoration: none;
                         "
-                        href="gsh.com"
-                        >GSH</a
+                        href="<%= appClientHref %>"
+                        ><%= appName %></a
                       >.
                     </p>
                     <ul style="margin: 10px -4px 0; padding: 0; display: none">
@@ -344,8 +338,9 @@
                           color: <%= primaryColor %>;
                           text-decoration: none;
                         "
-                        href="gsh.com"
-                        >gsh.com</a
+                        href="<%= appClientHref %>"
+                      >
+                        <%= appName %></a
                       >.
                       <!-- To update your emails preferences
                       <a style="color: <%= primaryColor %>; text-decoration:none;" href="#">click here</a>. -->

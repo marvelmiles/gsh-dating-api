@@ -1,4 +1,5 @@
-import { isObject, isProdMode } from "./validators";
+import { isProdMode } from "../config/constants";
+import { isObject } from "./validators";
 
 export const getAll = async (model, reqQuery, match) => {
   return new Promise(async (resolve, reject) => {
@@ -87,3 +88,6 @@ export const toObj = (arr) => {
 
   return obj;
 };
+
+export const getClientUrl = (req, fullUrl = false) =>
+  `${req.protocol}://${req.get("host")}${fullUrl ? req.originalUrl : ""}`;

@@ -2,10 +2,10 @@ import jwt from "jsonwebtoken";
 import { createError } from "../utils/error.js";
 import { deleteFile } from "./file-handlers.js";
 import {
-  CLIENT_ORIGIN,
   HTTP_MSG_UNAUTHORIZE_ACCESS,
   HTTP_MSG_403,
   HTTP_CODE_UNAUTHORIZE_ACCESS,
+  allowedOrigins,
 } from "../config/constants.js";
 import { isObjectId } from "./validators.js";
 import User from "../models/User.js";
@@ -97,7 +97,7 @@ export const errHandler = (err, req, res, next) => {
 export const validateCors = (origin = "", cb) => {
   origin = origin.headers ? origin.headers.origin : origin;
 
-  if (!origin || origin === CLIENT_ORIGIN || true)
+  if (!origin || allowedOrigins.includes(origin))
     cb(null, {
       origin: true,
       optionsSuccessStatus: 200,
