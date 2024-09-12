@@ -24,6 +24,7 @@ import {
   HTTP_CODE_UNVERIFIED_EMAIL,
   PWD_RESET,
   HTTP_CODE_MAIL_ERROR,
+  MAIL_CONST,
 } from "../config/constants.js";
 import { serializeUserToken } from "../utils/serializers.js";
 import { appendKeyValue, getClientUrl, setFutureDate } from "../utils/index.js";
@@ -54,7 +55,10 @@ const mailVerificationToken = async (
           appClientHref: CLIENT_ORIGIN,
         };
 
-        if (CLIENT_ORIGIN.toLowerCase().indexOf("breezeup") === -1) {
+        const isOtherApp =
+          CLIENT_ORIGIN.toLowerCase().indexOf("breezeup") === -1;
+
+        if (isOtherApp) {
           templateData.appName = "Soulmater";
           templateData.supportMail = "soulmater@supoort.com";
         } else {
@@ -100,7 +104,12 @@ const mailVerificationToken = async (
                   );
                 });
             }
-          }
+          },
+          MAIL_CONST.service,
+          isOtherApp ? MAIL_CONST.otherUser : MAIL_CONST.user,
+          isOtherApp
+            ? process.env.MAIL_PASSWORD_OTHER
+            : process.env.MAIL_PASSWORD
         );
       })
       .catch(reject);

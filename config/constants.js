@@ -35,6 +35,8 @@ export const HTTP_CODE_INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
 
 export const MAIL_CONST = {
   user: "caltextrader@gmail.com",
+  otherUser: "marvellousabidemi2@gmail.com",
+  service: "Gmail",
 };
 
 export const HTTP_CODE_MAIL_ERROR = "_MAIL_ERROR";
