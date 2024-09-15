@@ -1,26 +1,35 @@
 import { isProdMode } from "../config/constants";
 import { isObject } from "./validators";
 
-export const getAll = async (model, reqQuery, match) => {
+export const getAll = async (model, reqQuery, pipeRules = {}) => {
   return new Promise(async (resolve, reject) => {
     const page = parseInt(reqQuery.page) || 1;
-    const size = parseInt(reqQuery.size) || 10;
 
-    const totalDocs = await model.countDocuments(match);
+    const totalDocs = await model.countDocuments(pipeRules.$match);
+
+    const size =
+      reqQuery.size === "all" ? totalDocs : parseInt(reqQuery.size) || 10;
+
     const totalPages = Math.ceil(totalDocs / size);
 
-    const pipeline = [
-      { $match: match },
-      { $sort: { _id: -1 } },
-      { $skip: (page - 1) * size },
-      { $limit: size },
+    let pipeline = [
+      { $match: pipeRules.$match },
       {
         $addFields: {
+          ...pipeRules.$addFields,
           id: "$_id",
         },
       },
       {
+        $sort: pipeRules.overrideSort
+          ? pipeRules.$sort
+          : { id: -1, ...pipeRules.$sort },
+      },
+      { $skip: (page - 1) * size },
+      { $limit: size },
+      {
         $project: {
+          ...pipeRules.$project,
           _id: 0,
           password: 0,
         },

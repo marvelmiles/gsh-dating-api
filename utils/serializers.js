@@ -81,30 +81,73 @@ export const createSearchQuery = (query = {}, reason = "users") => {
             };
           })
         : [];
-      const _rules = {
+
+      const $match = {
         ...match,
-        _id: {
-          $ne:
-            query.searchUid && isObjectId(query.searchUid)
-              ? query.searchUid
-              : undefined,
-        },
-        ...(query?.mandatory?.filter || query.strictFilter
+        ...(query?.mandatory?.filter || query.strictSearch
           ? toObj(bioFilterRules)
           : {}),
-        ...(query.strictFilter ? toObj(bioRules) : {}),
-        ...(query.strictFilter ? toObj(rules) : {}),
-        $or: [],
+        ...(query.strictSearch ? toObj(bioRules) : {}),
+        ...(query.strictSearch ? toObj(rules) : {}),
+        $or: query.searchUid
+          ? query.searchUid
+              .split(" ")
+              .filter((id) => isObjectId(id))
+              .map((id) => ({
+                _id: {
+                  $ne: id,
+                },
+              }))
+          : [],
       };
 
-      if (query.strictFilter ? false : !query?.mandatory?.filter)
-        _rules.$or = _rules.$or.concat(bioFilterRules);
+      if (query.strictSearch ? false : !query?.mandatory?.filter)
+        $match.$or = $match.$or.concat(bioFilterRules);
 
-      if (!query.strictFilter) _rules.$or = _rules.$or.concat(rules, bioRules);
+      if (!query.strictSearch) $match.$or = $match.$or.concat(rules, bioRules);
 
-      if (!_rules.$or.length) delete _rules.$or;
+      if (!$match.$or.length) delete $match.$or;
 
-      return _rules;
+      const pipeRules = {
+        $match,
+      };
+
+      if (query.sortRelevance) {
+        for (const key in query.sortRelevance) {
+          let values = query.sortRelevance[key];
+
+          if (query.strictSearch) $match[key] = { $exists: true };
+
+          const priorityKey = `${key}Priority`;
+
+          if (values || !isNaN(values)) {
+            values = Array.isArray(values) ? values : [values];
+
+            pipeRules.$addFields = {
+              [priorityKey]: {
+                $switch: {
+                  branches: values.map((value, i) => ({
+                    case: { $eq: [`$${key}`, value] },
+                    then: i + 1,
+                  })),
+                  default: values.length + 1,
+                },
+              },
+            };
+
+            pipeRules.$sort = {
+              [priorityKey]: 1,
+              id: -1,
+            };
+
+            pipeRules.overrideSort = true;
+
+            pipeRules.$project = { [priorityKey]: 0 };
+          }
+        }
+      }
+
+      return pipeRules;
   }
 };
 
