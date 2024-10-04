@@ -182,6 +182,8 @@ export const selectDatabase = async (req, res, next) => {
   try {
     const url = getClientUrl(req);
 
+    console.log(url, req.headers, "db origin");
+
     const isBreeze = isBreezeOrigin(url);
 
     req.isBreezeOrigin = isBreeze;
