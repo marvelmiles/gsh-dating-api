@@ -44,7 +44,7 @@ export const isPassword = (password) => {
   return msg;
 };
 
-export const isBreezeOrigin = (CLIENT_ORIGIN) => {
+export const isBreezeOrigin = (CLIENT_ORIGIN = "") => {
   console.log(
     CLIENT_ORIGIN,
     CLIENT_ORIGIN.toLowerCase().indexOf("breezeup") > -1 ||

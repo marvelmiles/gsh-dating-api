@@ -98,11 +98,13 @@ export const toObj = (arr) => {
   return obj;
 };
 
-export const getClientUrl = (req, fullUrl = false) => {
+export const getClientUrl = (req = "", fullUrl = false) => {
   const origin =
-    req.headers.origin ||
-    req.headers.referer ||
-    `${req.protocol}://${req.get("host")}${fullUrl ? req.originalUrl : ""}`;
+    typeof req === "string"
+      ? req
+      : req.headers.origin ||
+        req.headers.referer ||
+        `${req.protocol}://${req.get("host")}${fullUrl ? req.originalUrl : ""}`;
 
   return origin.endsWith("/") ? origin.slice(0, origin.length - 1) : origin;
 };

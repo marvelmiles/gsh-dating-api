@@ -99,7 +99,7 @@ export const errHandler = (err, req, res, next) => {
 };
 
 export const validateCors = (origin = "", cb) => {
-  origin = (origin.headers ? origin.headers.origin : origin).toLowerCase();
+  origin = getClientUrl(origin).toLowerCase();
 
   if (!origin || allowedOrigins.includes(origin))
     cb(null, {
