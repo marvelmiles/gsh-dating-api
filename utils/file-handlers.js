@@ -34,11 +34,9 @@ export const uploadFile = (
   return [
     (req, res, next) => {
       const getProp = (field = {}) => ({
-        name: req.query.fieldName || field.name,
-        maxCount: req.query.maxCount || field.maxCount,
+        name: req.query.fieldName || field.name || "avatar",
+        maxCount: req.query.maxCount || field.maxCount || 1,
       });
-
-      const prop = getProp(config);
 
       return multer({
         storage: new multer.memoryStorage(),
@@ -49,8 +47,10 @@ export const uploadFile = (
           ? "single"
           : "array"
       ](
-        config.length ? config.map((field) => getProp(field)) : prop.name,
-        config.length ? undefined : prop.maxCount
+        config.length
+          ? config.map((field) => getProp(field))
+          : getProp(config).name,
+        config.length ? undefined : getProp(config).maxCount
       )(req, res, next);
     },
     async (req, res, next) => {
@@ -58,7 +58,7 @@ export const uploadFile = (
         const applyQueryConfig = (config = {}) => {
           config.maxDur = req.query.maxDur;
           config.maxSize = req.query.maxSize;
-          config.dirPath = "gsh-" + (config.dirPath || "photos");
+          config.dirPath = config.dirPath || "photos";
           config.type = config.type || "image";
 
           return config;

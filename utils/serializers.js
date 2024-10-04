@@ -60,14 +60,11 @@ export const createSearchQuery = (query = {}, reason = "users") => {
             {
               username: search,
             },
-            {
-              fullname: search,
-            },
           ]
         : [];
 
       const bioRules = query.bio
-        ? query.bio.split(" ").map((key) => {
+        ? query.bio.map((key) => {
             return {
               [`bio.${key.toString()}`]: search,
             };
@@ -146,6 +143,8 @@ export const createSearchQuery = (query = {}, reason = "users") => {
           }
         }
       }
+
+      console.log(pipeRules.$match, query);
 
       return pipeRules;
   }

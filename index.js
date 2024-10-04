@@ -3,9 +3,12 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import queryType from "query-types";
 import { console500MSG } from "./utils/error";
-import { errHandler, validateCors } from "./utils/middlewares";
+import {
+  errHandler,
+  validateCors,
+  queryTypeHandler,
+} from "./utils/middlewares";
 import authRouter from "./routers/auth";
 import miscRouter from "./routers/misc";
 import userRouter from "./routers/user";
@@ -29,7 +32,7 @@ app
     })
   )
   .use(express.urlencoded({ extended: true }))
-  .use(queryType.middleware())
+  .use(queryTypeHandler)
   .use(express.static("public"));
 
 // ROUTES
@@ -44,9 +47,4 @@ app
 
 const port = process.env.PORT || 10000;
 
-mongoose
-  .connect(process.env[isProdMode ? "MONGODB_PROD_URI" : "MONGODB_DEV_URI"])
-  .then(() => {
-    app.listen(port, (_) => console.log(`Server started on port ${port}..`));
-  })
-  .catch(console500MSG);
+app.listen(port, (_) => console.log(`Server started on port ${port}..`));

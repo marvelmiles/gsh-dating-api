@@ -9,6 +9,8 @@ import {
 } from "../config/constants.js";
 import { isObjectId } from "./validators.js";
 import User from "../models/User.js";
+import queryTypes from "query-types";
+import qs from "qs";
 
 const select = "-kycDocs._id -kycIds._id";
 
@@ -97,7 +99,7 @@ export const errHandler = (err, req, res, next) => {
 export const validateCors = (origin = "", cb) => {
   origin = origin.headers ? origin.headers.origin : origin;
 
-  if (!origin || allowedOrigins.includes(origin))
+  if (true || !origin || allowedOrigins.includes(origin))
     cb(null, {
       origin: true,
       optionsSuccessStatus: 200,
@@ -160,3 +162,16 @@ export const validateUserMailVerification = async (req, res, next) => {
     next(err);
   }
 };
+
+export const queryTypeHandler = [
+  (req, res, next) => {
+    req.query = qs.parse(req.query, {
+      decodeDotInKeys: true,
+      parseArrays: req.query.parseArrays
+        ? req.query.parseArrays === "true"
+        : true,
+    });
+    next();
+  },
+  queryTypes.middleware(),
+];

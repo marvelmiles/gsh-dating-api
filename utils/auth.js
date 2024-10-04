@@ -30,7 +30,7 @@ export const deleteCookie = (name, res) => {
 };
 
 export const setJWTCookie = (name, uid, res, time = {}, withExtend) => {
-  let { duration = 1, extend, type = "h" } = time;
+  let { duration = 1, extend = 24, type = "h" } = time;
   duration = withExtend ? extend : duration;
 
   let expires = new Date();

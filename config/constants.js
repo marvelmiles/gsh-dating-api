@@ -34,7 +34,7 @@ export const HTTP_CODE_UNVERIFIED_EMAIL = "UNVERIFIED_EMAIL";
 export const HTTP_CODE_INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
 
 export const MAIL_CONST = {
-  user: "caltextrader@gmail.com",
+  user: "soulmatergsh@gmail.com",
   otherUser: "marvellousabidemi2@gmail.com",
   service: "Gmail",
 };
@@ -61,8 +61,10 @@ export const SESSION_COOKIE_DURATION = {
   shortLived: {
     duration: 5,
     type: "m",
+    extend: 25,
   },
   accessToken: {
+    extend: 24,
     duration: 1,
     type: "h",
   },
@@ -74,7 +76,7 @@ export const SESSION_COOKIE_DURATION = {
 };
 
 export const cookieConfig = {
-  httpOnly: false,
+  httpOnly: true,
   sameSite: "None",
   secure: true, // Must be true for SameSite=None
   path: "/",

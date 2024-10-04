@@ -1,6 +1,5 @@
 import { HTTP_MULTER_NAME_ERROR } from "../config/constants";
 
-
 export const getMongooseErrMsg = (err) => {
   let msg = "";
 
@@ -174,3 +173,5 @@ export const createError = (
 
   return err;
 };
+
+export const invalidate = (...props) => createError(...props);

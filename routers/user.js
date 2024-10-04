@@ -19,13 +19,21 @@ userRouter
     findUser,
     uploadFile({
       name: "profileCover",
-      dirPath: "profile-covers",
+      dirPath: "gsh-profile-covers",
       type: "medias",
       single: false,
       maxCount: 6,
     }),
     updateProfileCover
   )
-  .put("/:userId", verifyJWToken, findUser, uploadFile(), updateUserById);
+  .put(
+    "/:userId",
+    verifyJWToken,
+    findUser,
+    uploadFile({
+      dirPath: "gsh-photos",
+    }),
+    updateUserById
+  );
 
 export default userRouter;

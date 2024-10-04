@@ -1,9 +1,10 @@
 import User from "../models/User";
 import { getAll } from "../utils";
 import { deleteFile } from "../utils/file-handlers";
-import { createSuccessBody } from "../utils/normalizers";
+import { createSuccessBody, safeParseJSON } from "../utils/normalizers";
 import { createSearchQuery } from "../utils/serializers";
 import { appendUserKeyValue } from "../utils/user";
+import { isObject } from "../utils/validators";
 
 export const getUserById = async (req, res, next) => {
   try {
@@ -77,33 +78,46 @@ export const updateProfileCover = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
-    if (!req.files?.length) throw "Invalid request: Empty upload";
+    const updateIndex =
+      (req.body.updateIndex
+        ? safeParseJSON(req.body.updateIndex, "updateIndex")
+        : null) || req.query.updateIndex;
+
+    const delIndex =
+      (req.body.delIndex
+        ? safeParseJSON(req.body.delIndex, "delIndex")
+        : null) || req.query.delIndex;
+
+    if (req.files ? false : !delIndex)
+      throw "Invalid request: Empty upload or No modification rule.";
 
     let user = req.user;
 
     let oldCovers = user.profileCover.slice();
 
-    const rules =
-      (req.body.rules ? JSON.parse(req.body.rules) : null) || req.query.rules;
-
     let delUrl = [];
 
-    const strictMode = typeof req.query.strictMode
-      ? req.query.strictMode
-      : true;
+    const strictMode =
+      typeof req.query.strictMode === "boolean" ? req.query.strictMode : true;
 
-    if (rules) {
-      const { delIndex = [], updateIndex = {} } = rules;
+    if (delIndex) {
+      if (!Array.isArray(delIndex))
+        throw "Invalid request. Expected delIndex to be of type array.";
 
       for (let index of delIndex) {
         index = Number(index);
 
         if (isNaN(index)) throw `Invalid delete index ${index}`;
 
-        const url = oldCovers.splice(index, 1)[0];
+        const file = oldCovers.splice(index, 1)[0];
 
-        url && delUrl.push(url);
+        file && delUrl.push(file.url);
       }
+    }
+
+    if (updateIndex) {
+      if (!isObject(updateIndex))
+        throw "Invalid request. Expected updateIndex to be of type Object.";
 
       for (let index in updateIndex) {
         index = Number(index);
@@ -115,25 +129,27 @@ export const updateProfileCover = async (req, res, next) => {
 
         const file = req.files[filePos];
 
-        const url = file?.publicUrl;
+        const getMediaProp = (file) => ({
+          mimetype: file.mimetype,
+          size: file.size,
+          url: file.publicUrl,
+        });
 
-        if (url) {
-          const prev = oldCovers[index - 1];
+        if (file?.publicUrl) {
+          const oldMedia = oldCovers[index];
 
-          if (strictMode && index && !prev)
+          if (strictMode && index && !oldMedia)
             throw `Invalid request: Update index ${index} exceeds profile cover size of ${oldCovers.length}`;
 
-          const oldUrl = oldCovers[index];
+          if (oldMedia) delUrl.push(oldMedia.url);
 
-          if (oldUrl) delUrl.push(oldUrl);
-
-          oldCovers[index] = url;
+          oldCovers[index] = getMediaProp(file);
         }
       }
-    } else {
-      delUrl = oldCovers;
+    } else if (req.files.length) {
+      delUrl = oldCovers.map((media) => media.url);
 
-      oldCovers = req.files.map((file) => file.publicUrl);
+      oldCovers = req.files.map((file) => getMediaProp(file));
     }
 
     user = await User.findByIdAndUpdate(

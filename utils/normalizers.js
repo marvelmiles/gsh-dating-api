@@ -16,3 +16,11 @@ export const createSuccessBody = (
       };
   }
 };
+
+export const safeParseJSON = (value, errKey = "body value") => {
+  try {
+    return JSON.parse(value);
+  } catch (err) {
+    throw `Expected ${errKey} should be of type JSON`;
+  }
+};

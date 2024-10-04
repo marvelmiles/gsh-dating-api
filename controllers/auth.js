@@ -55,15 +55,16 @@ const mailVerificationToken = async (
           appClientHref: CLIENT_ORIGIN,
         };
 
-        const isOtherApp =
-          CLIENT_ORIGIN.toLowerCase().indexOf("breezeup") === -1;
+        const isBreeze =
+          CLIENT_ORIGIN.toLowerCase().indexOf("breezeup") === -1 ||
+          CLIENT_ORIGIN.toLowerCase().indexOf("gsh-rouge");
 
-        if (isOtherApp) {
-          templateData.appName = "Soulmater";
-          templateData.supportMail = "soulmater@supoort.com";
-        } else {
+        if (isBreeze) {
           templateData.appName = "Breezeup";
-          templateData.supportMail = "breezeup@supoort.com";
+          templateData.supportMail = MAIL_CONST.user;
+        } else {
+          templateData.appName = "Soulmater";
+          templateData.supportMail = MAIL_CONST.otherUser;
         }
 
         const mailStr = readTemplateFile(
@@ -106,10 +107,8 @@ const mailVerificationToken = async (
             }
           },
           MAIL_CONST.service,
-          isOtherApp ? MAIL_CONST.otherUser : MAIL_CONST.user,
-          isOtherApp
-            ? process.env.MAIL_PASSWORD_OTHER
-            : process.env.MAIL_PASSWORD
+          isBreeze ? MAIL_CONST.user : MAIL_CONST.otherUser,
+          isBreeze ? process.env.MAIL_PASSWORD : process.env.MAIL_PASSWORD_OTHER
         );
       })
       .catch(reject);
@@ -136,6 +135,8 @@ export const signup = async (req, res, next) => {
     let user = await User.findOne({
       $or: conditions,
     });
+
+    console.log(conditions, body, user, "ignup");
 
     if (user)
       throw createError(
@@ -277,7 +278,8 @@ export const signin = async (req, res, next) => {
       COOKIE_KEY_ACCESS_TOKEN,
       user.id,
       res,
-      SESSION_COOKIE_DURATION.accessToken
+      SESSION_COOKIE_DURATION.accessToken,
+      req.query.rememberMe
     );
 
     setJWTCookie(
@@ -296,6 +298,8 @@ export const signin = async (req, res, next) => {
 
 export const signout = async (req, res, next) => {
   try {
+    console.log("singed out...");
+
     deleteCookie(COOKIE_KEY_ACCESS_TOKEN, res);
     deleteCookie(COOKIE_KEY_REFRESH_TOKEN, res);
 
@@ -392,6 +396,8 @@ export const resetPwd = async (req, res, next) => {
 
 export const refreshTokens = async (req, res, next) => {
   try {
+    console.log("refresh-tokens");
+
     verifyJWToken(req, {
       applyRefresh: true,
     });
@@ -401,7 +407,8 @@ export const refreshTokens = async (req, res, next) => {
         COOKIE_KEY_ACCESS_TOKEN,
         req.user.id,
         res,
-        SESSION_COOKIE_DURATION.accessToken
+        SESSION_COOKIE_DURATION.accessToken,
+        req.query.rememberMe
       );
     else throw createError(`Forbidden access`, 403);
 

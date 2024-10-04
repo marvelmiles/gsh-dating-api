@@ -8,7 +8,7 @@ export const getAll = async (model, reqQuery, pipeRules = {}) => {
     const totalDocs = await model.countDocuments(pipeRules.$match);
 
     const size =
-      reqQuery.size === "all" ? totalDocs : parseInt(reqQuery.size) || 10;
+      reqQuery.limit === "all" ? totalDocs : Number(reqQuery.limit) || 10;
 
     const totalPages = Math.ceil(totalDocs / size);
 
@@ -98,5 +98,11 @@ export const toObj = (arr) => {
   return obj;
 };
 
-export const getClientUrl = (req, fullUrl = false) =>
-  `${req.protocol}://${req.get("host")}${fullUrl ? req.originalUrl : ""}`;
+export const getClientUrl = (req, fullUrl = false) => {
+  const origin =
+    req.headers.origin ||
+    req.headers.referer ||
+    `${req.protocol}://${req.get("host")}${fullUrl ? req.originalUrl : ""}`;
+
+  return origin.endsWith("/") ? origin.slice(0, origin.length - 1) : origin;
+};
