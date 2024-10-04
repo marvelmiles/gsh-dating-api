@@ -9,7 +9,7 @@ export const connectToDatabase = async (isBreeze) => {
   if (connections[conKey]) return connections[conKey];
 
   // Establish a new connection
-  const connection = await mongoose.connect(
+  const connection = await mongoose.createConnection(
     process.env[
       isProdMode
         ? isBreeze
