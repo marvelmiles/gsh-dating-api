@@ -8,6 +8,7 @@ import {
   errHandler,
   validateCors,
   queryTypeHandler,
+  selectDatabase,
 } from "./utils/middlewares";
 import authRouter from "./routers/auth";
 import miscRouter from "./routers/misc";
@@ -25,6 +26,7 @@ const app = express();
 app
   .use(cookieParser())
   .use(cors(validateCors))
+  .use(selectDatabase)
   .use(
     express.json({
       limit: "200mb",

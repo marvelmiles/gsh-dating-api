@@ -7,7 +7,7 @@ import {
   validateVerificationReason,
   verifyAuthCode,
 } from "../utils/auth.js";
-import { isEmail, isObjectId } from "../utils/validators.js";
+import { isBreezeOrigin, isEmail, isObjectId } from "../utils/validators.js";
 import { readTemplateFile, sendMail } from "../utils/file-handlers.js";
 import { findUser, verifyJWToken } from "../utils/middlewares.js";
 import { createSuccessBody } from "../utils/normalizers.js";
@@ -44,8 +44,6 @@ const mailVerificationToken = async (
 
         const postRoute = `${user.id}`;
 
-        console.log(CLIENT_ORIGIN, "mail origin....");
-
         const templateData = {
           token,
           fullname: user.fullname || "esteemed user",
@@ -55,9 +53,7 @@ const mailVerificationToken = async (
           appClientHref: CLIENT_ORIGIN,
         };
 
-        const isBreeze =
-          CLIENT_ORIGIN.toLowerCase().indexOf("breezeup") === -1 ||
-          CLIENT_ORIGIN.toLowerCase().indexOf("gsh-rouge");
+        const isBreeze = isBreezeOrigin(CLIENT_ORIGIN);
 
         if (isBreeze) {
           templateData.appName = "Breezeup";

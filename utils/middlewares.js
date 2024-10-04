@@ -7,10 +7,12 @@ import {
   HTTP_CODE_UNAUTHORIZE_ACCESS,
   allowedOrigins,
 } from "../config/constants.js";
-import { isObjectId } from "./validators.js";
+import { isBreezeOrigin, isObjectId } from "./validators.js";
 import User from "../models/User.js";
 import queryTypes from "query-types";
 import qs from "qs";
+import { getClientUrl } from "./index.js";
+import { connectToDatabase } from "../config/db.js";
 
 const select = "-kycDocs._id -kycIds._id";
 
@@ -99,7 +101,7 @@ export const errHandler = (err, req, res, next) => {
 export const validateCors = (origin = "", cb) => {
   origin = origin.headers ? origin.headers.origin : origin;
 
-  if (true || !origin || allowedOrigins.includes(origin))
+  if (!origin || allowedOrigins.includes(origin))
     cb(null, {
       origin: true,
       optionsSuccessStatus: 200,
@@ -175,3 +177,19 @@ export const queryTypeHandler = [
   },
   queryTypes.middleware(),
 ];
+
+export const selectDatabase = async (req, res, next) => {
+  try {
+    const url = getClientUrl(req);
+
+    const isBreeze = isBreezeOrigin(url);
+
+    req.isBreezeOrigin = isBreeze;
+
+    req.dbConnection = await connectToDatabase(isBreeze);
+
+    next();
+  } catch (err) {
+    next(err);
+  }
+};

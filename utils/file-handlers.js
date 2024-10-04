@@ -59,6 +59,9 @@ export const uploadFile = (
           config.maxDur = req.query.maxDur;
           config.maxSize = req.query.maxSize;
           config.dirPath = config.dirPath || "photos";
+          config.dirPath = req.isBreezeOrigin
+            ? config.dirPath
+            : `soulmater-${config.dirPath}`;
           config.type = config.type || "image";
 
           return config;
