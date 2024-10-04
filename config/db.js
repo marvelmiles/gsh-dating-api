@@ -3,13 +3,13 @@ import { isProdMode } from "./constants";
 
 const connections = {};
 
-export const connectToDatabase = async (isBreeze) => {
+export const connectToDatabase = (isBreeze) => {
   const conKey = isBreeze ? "breeze" : "soulmater";
 
   if (connections[conKey]) return connections[conKey];
 
   // Establish a new connection
-  const connection = await mongoose.createConnection(
+  const connection = mongoose.createConnection(
     process.env[
       isProdMode
         ? isBreeze
