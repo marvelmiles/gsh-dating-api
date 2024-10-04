@@ -1,9 +1,7 @@
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import { console500MSG } from "./utils/error";
 import {
   errHandler,
   validateCors,
@@ -13,7 +11,6 @@ import {
 import authRouter from "./routers/auth";
 import miscRouter from "./routers/misc";
 import userRouter from "./routers/user";
-import { isProdMode } from "./config/constants";
 
 // CONFIGURATIONS
 

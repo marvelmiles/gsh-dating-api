@@ -8,7 +8,6 @@ import {
   allowedOrigins,
 } from "../config/constants.js";
 import { isBreezeOrigin, isObjectId } from "./validators.js";
-import User from "../models/User.js";
 import queryTypes from "query-types";
 import qs from "qs";
 import { getClientUrl } from "./index.js";
@@ -113,6 +112,8 @@ export const validateCors = (origin = "", cb) => {
 
 export const findUser = async (req, res = {}, next) => {
   try {
+    const User = req.dbModels.User;
+
     const match = res.match || {};
 
     const message = createError(
@@ -178,7 +179,7 @@ export const queryTypeHandler = [
   queryTypes.middleware(),
 ];
 
-export const selectDatabase = async (req, res, next) => {
+export const selectDatabase = (req, res, next) => {
   try {
     const url = getClientUrl(req);
 
@@ -186,7 +187,10 @@ export const selectDatabase = async (req, res, next) => {
 
     req.isBreezeOrigin = isBreeze;
 
-    req.dbConnection = await connectToDatabase(isBreeze);
+    const { db, models } = connectToDatabase(isBreeze);
+
+    req.dbModels = models;
+    req.dbConnection = db;
 
     next();
   } catch (err) {

@@ -1,9 +1,9 @@
 import { toObj } from ".";
-import User from "../models/User";
 import { generateBcryptHash, generateUUID } from "./auth";
 import { isObjectId } from "./validators";
 
 export const serializeUserToken = async (
+  User,
   user,
   milliseconds = Date.now() + 60 * 1000 * 25
 ) => {
@@ -25,7 +25,7 @@ export const serializeUserToken = async (
   return token;
 };
 
-export const serializeUserRefferalCode = async (user) => {
+export const serializeUserRefferalCode = async (User, user) => {
   let code;
 
   do {

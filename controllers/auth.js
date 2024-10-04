@@ -1,4 +1,3 @@
-import User from "../models/User.js";
 import { createError, console500MSG } from "../utils/error.js";
 import bcrypt from "bcrypt";
 import {
@@ -31,6 +30,7 @@ import { appendKeyValue, getClientUrl, setFutureDate } from "../utils/index.js";
 import { generateUsername, getUserEssentials } from "../utils/user.js";
 
 const mailVerificationToken = async (
+  User,
   user,
   CLIENT_ORIGIN,
   isPwd = false,
@@ -38,7 +38,7 @@ const mailVerificationToken = async (
   successMsg = "A verification code as been sent to your mail!"
 ) =>
   new Promise((resolve, reject) => {
-    serializeUserToken(user)
+    serializeUserToken(User, user)
       .then((token) => {
         const route = `${CLIENT_ORIGIN}/auth/token-verification`;
 
@@ -112,6 +112,8 @@ const mailVerificationToken = async (
 
 export const signup = async (req, res, next) => {
   try {
+    const User = req.dbModels.User;
+
     const body = getUserEssentials(req.body);
 
     if (!isEmail(body.email))
@@ -124,7 +126,8 @@ export const signup = async (req, res, next) => {
     const conditions = [{ email: body.email }];
 
     if (body.username) {
-      if (body.provider) body.username = await generateUsername(body.username);
+      if (body.provider)
+        body.username = await generateUsername(User, body.username);
       else conditions.push({ username: body.username });
     }
 
@@ -191,9 +194,11 @@ export const verifyUserToken = async (req, res, next) => {
 
 export const generateUserToken = async (req, res, next) => {
   try {
+    const User = req.dbModels.User;
+
     validateVerificationReason(req.params.reason, req.user);
 
-    res.json(await mailVerificationToken(req.user, getClientUrl(req)));
+    res.json(await mailVerificationToken(User, req.user, getClientUrl(req)));
   } catch (err) {
     next(err);
   }
@@ -201,6 +206,8 @@ export const generateUserToken = async (req, res, next) => {
 
 export const signin = async (req, res, next) => {
   try {
+    const User = req.dbModels.User;
+
     const conditions = [{ email: req.body.placeholder || req.body.email }];
 
     if (req.body.username && !req.body.provider)
@@ -229,7 +236,7 @@ export const signin = async (req, res, next) => {
             );
         } else {
           if (req.body.username)
-            req.body.username = await generateUsername(req.body.username);
+            req.body.username = await generateUsername(User, req.body.username);
 
           const update = getUserEssentials(req.body);
 
@@ -296,6 +303,8 @@ export const signout = async (req, res, next) => {
   try {
     console.log("singed out...");
 
+    const User = req.dbModels.User;
+
     deleteCookie(COOKIE_KEY_ACCESS_TOKEN, res);
     deleteCookie(COOKIE_KEY_REFRESH_TOKEN, res);
 
@@ -330,6 +339,8 @@ export const userExists = async (req, res, next) => {
 
 export const recoverPwd = async (req, res, next) => {
   try {
+    const User = req.dbModels.User;
+
     if (req.user.provider)
       throw createError(
         HTTP_MSG_UNAUTHORIZE_ACCESS,
@@ -337,7 +348,9 @@ export const recoverPwd = async (req, res, next) => {
         HTTP_CODE_UNAUTHORIZE_ACCESS
       );
 
-    res.json(await mailVerificationToken(req.user, getClientUrl(req), true));
+    res.json(
+      await mailVerificationToken(User, req.user, getClientUrl(req), true)
+    );
   } catch (err) {
     next(err);
   }
@@ -345,6 +358,8 @@ export const recoverPwd = async (req, res, next) => {
 
 export const resetPwd = async (req, res, next) => {
   try {
+    const User = req.dbModels.User;
+
     if (!isObjectId(req.body.userId)) throw "Invalid request";
 
     if (!req.body.password) throw "Invalid request. New password is required.";

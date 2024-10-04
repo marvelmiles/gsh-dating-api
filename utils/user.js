@@ -1,5 +1,4 @@
 import { appendKeyValue } from ".";
-import User from "../models/User";
 import { generateUUID } from "./auth";
 import { v4 as uuid } from "uuid";
 
@@ -33,7 +32,7 @@ export const getUserEssentials = (body) => {
   return data;
 };
 
-export const generateUsername = async (username = "user") => {
+export const generateUsername = async (User, username = "user") => {
   let name = username;
 
   const maxAttempts = 500;

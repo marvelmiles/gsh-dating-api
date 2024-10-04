@@ -4,7 +4,7 @@ import { SERVER_ORIGIN } from "../config/constants";
 import { invalidate } from "../utils/error";
 import { Schema, Types, model } from "mongoose";
 
-const schema = new Schema(
+export const userSchema = new Schema(
   {
     lastname: {
       type: String,
@@ -148,20 +148,20 @@ const schema = new Schema(
   }
 );
 
-schema.virtual("fullname").get(function () {
+userSchema.virtual("fullname").get(function () {
   if (this.firstname || this.lastname)
     return ((this.firstname || "") + " " + (this.lastname || "")).trim();
 });
 
-schema.virtual("referralLink").get(function () {
+userSchema.virtual("referralLink").get(function () {
   return `${SERVER_ORIGIN}?ref=${this.referralCode}`;
 });
 
-schema.virtual("expired").get(function () {
+userSchema.virtual("expired").get(function () {
   return !!(
     this.accountExpires &&
     new Date().getTime() >= new Date(this.accountExpires).getTime()
   );
 });
 
-export default model("user", schema);
+// export default model("user", userSchema);

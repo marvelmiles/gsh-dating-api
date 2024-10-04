@@ -5,6 +5,7 @@ export const allowedOrigins = [
   "http://localhost:3000",
   "https://gsh-rouge.vercel.app",
   "http://sgh-dating-api.glitch.me",
+  "http://localhost:10000",
 ];
 
 export const isProdMode =

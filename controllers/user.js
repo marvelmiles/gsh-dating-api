@@ -1,4 +1,3 @@
-import User from "../models/User";
 import { getAll } from "../utils";
 import { deleteFile } from "../utils/file-handlers";
 import { createSuccessBody, safeParseJSON } from "../utils/normalizers";
@@ -8,6 +7,8 @@ import { isObject } from "../utils/validators";
 
 export const getUserById = async (req, res, next) => {
   try {
+    const User = req.dbModels.User;
+
     res.json(createSuccessBody(await User.findById(req.params.userId)));
   } catch (err) {
     next(err);
@@ -16,6 +17,8 @@ export const getUserById = async (req, res, next) => {
 
 export const getAllUsers = async (req, res, next) => {
   try {
+    const User = req.dbModels.User;
+
     res.json(
       createSuccessBody(
         await getAll(User, req.query, createSearchQuery(req.query))
@@ -29,6 +32,8 @@ export const getAllUsers = async (req, res, next) => {
 export const updateUserById = async (req, res, next) => {
   try {
     const { userId } = req.params;
+
+    const User = req.dbModels.User;
 
     const { firstname, username, lastname, deleteAvatar, photoUrl } = req.body;
 
@@ -76,6 +81,8 @@ export const updateUserById = async (req, res, next) => {
 
 export const updateProfileCover = async (req, res, next) => {
   try {
+    const User = req.dbModels.User;
+
     const { userId } = req.params;
 
     const updateIndex =
