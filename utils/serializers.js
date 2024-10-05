@@ -63,12 +63,16 @@ export const createSearchQuery = (query = {}, reason = "users") => {
           ]
         : [];
 
+      console.log(query, "query ser");
+
       const bioRules = query.bio
-        ? query.bio.map((key) => {
-            return {
-              [`bio.${key.toString()}`]: search,
-            };
-          })
+        ? (Array.isArray(query.bio) ? query.bio : query.bio.split(" ")).map(
+            (key) => {
+              return {
+                [`bio.${key.toString()}`]: search,
+              };
+            }
+          )
         : [];
 
       const bioFilterRules = query.filter
@@ -79,13 +83,14 @@ export const createSearchQuery = (query = {}, reason = "users") => {
           })
         : [];
 
+      const mandatoryQ = query.strictSearch || query?.mandatory?.q;
+      const mandatoryFilter = query?.mandatory?.filter || query.strictSearch;
+
       const $match = {
         ...match,
-        ...(query?.mandatory?.filter || query.strictSearch
-          ? toObj(bioFilterRules)
-          : {}),
-        ...(query.strictSearch ? toObj(bioRules) : {}),
-        ...(query.strictSearch ? toObj(rules) : {}),
+        ...(mandatoryQ ? toObj(rules) : {}),
+        ...(mandatoryQ ? toObj(bioRules) : {}),
+        ...(mandatoryFilter ? toObj(bioFilterRules) : {}),
         $or: query.searchUid
           ? query.searchUid
               .split(" ")
@@ -98,10 +103,9 @@ export const createSearchQuery = (query = {}, reason = "users") => {
           : [],
       };
 
-      if (query.strictSearch ? false : !query?.mandatory?.filter)
-        $match.$or = $match.$or.concat(bioFilterRules);
+      if (!mandatoryFilter) $match.$or = $match.$or.concat(bioFilterRules);
 
-      if (!query.strictSearch) $match.$or = $match.$or.concat(rules, bioRules);
+      if (!mandatoryQ) $match.$or = $match.$or.concat(rules, bioRules);
 
       if (!$match.$or.length) delete $match.$or;
 
@@ -144,7 +148,7 @@ export const createSearchQuery = (query = {}, reason = "users") => {
         }
       }
 
-      console.log(pipeRules.$match, query);
+      console.log(pipeRules.$match, " search serializer...");
 
       return pipeRules;
   }

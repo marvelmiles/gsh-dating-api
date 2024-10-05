@@ -122,6 +122,12 @@ export const updateProfileCover = async (req, res, next) => {
       }
     }
 
+    const getMediaProp = (file) => ({
+      mimetype: file.mimetype,
+      size: file.size,
+      url: file.publicUrl,
+    });
+
     if (updateIndex) {
       if (!isObject(updateIndex))
         throw "Invalid request. Expected updateIndex to be of type Object.";
@@ -135,12 +141,6 @@ export const updateProfileCover = async (req, res, next) => {
           throw `Invalid update index key value pair should be of type integer ${index}`;
 
         const file = req.files[filePos];
-
-        const getMediaProp = (file) => ({
-          mimetype: file.mimetype,
-          size: file.size,
-          url: file.publicUrl,
-        });
 
         if (file?.publicUrl) {
           const oldMedia = oldCovers[index];
