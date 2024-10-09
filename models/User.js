@@ -81,7 +81,7 @@ export const userSchema = new Schema(
     provider: {
       type: String,
       enum: {
-        values: ["google"],
+        values: ["google", "sandbox"],
         message: "{VALUE} is not a valid provider. Accepted values: google",
       },
     },
@@ -136,6 +136,7 @@ export const userSchema = new Schema(
     timestamps: true,
     versionKey: false,
     toJSON: {
+      virtuals: true,
       transform(doc, ret) {
         ret.id = ret._id;
 
@@ -154,7 +155,11 @@ userSchema.virtual("fullname").get(function () {
 });
 
 userSchema.virtual("referralLink").get(function () {
-  return `${SERVER_ORIGIN}?ref=${this.referralCode}`;
+  return `${SERVER_ORIGIN}?ref=${this.referralCode || ""}`;
+});
+
+userSchema.virtual("isTestUser").get(function () {
+  return this.provider === "sandbox";
 });
 
 userSchema.virtual("expired").get(function () {

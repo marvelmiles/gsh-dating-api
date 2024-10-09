@@ -24,3 +24,9 @@ export const safeParseJSON = (value, errKey = "body value") => {
     throw `Expected ${errKey} should be of type JSON`;
   }
 };
+
+export const getMediaProp = (file) => ({
+  mimetype: file.mimetype,
+  size: file.size,
+  url: file.publicUrl,
+});

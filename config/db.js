@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { isProdMode } from "./constants";
 import { userSchema } from "../models/User";
+import { console500MSG } from "../utils/error";
 
 const connections = {};
 const dbModels = {};
@@ -38,4 +39,14 @@ export const connectToDatabase = (isBreeze) => {
   }
 
   return { db, models };
+};
+
+export const connectAndInsertDocs = async (docs = [], isBreeze = false) => {
+  try {
+    const { models } = connectToDatabase(isBreeze);
+
+    await models.User.insertMany(docs);
+  } catch (err) {
+    console500MSG(err, "CONNECT_INSERT_DOCS");
+  }
 };

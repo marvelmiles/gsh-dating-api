@@ -26,7 +26,12 @@ import {
   MAIL_CONST,
 } from "../config/constants.js";
 import { serializeUserToken } from "../utils/serializers.js";
-import { appendKeyValue, getClientUrl, setFutureDate } from "../utils/index.js";
+import {
+  appendKeyValue,
+  getClientUrl,
+  getRandomDoc,
+  setFutureDate,
+} from "../utils/index.js";
 import { generateUsername, getUserEssentials } from "../utils/user.js";
 
 const mailVerificationToken = async (
@@ -208,6 +213,12 @@ export const signin = async (req, res, next) => {
   try {
     const User = req.dbModels.User;
 
+    const provider = req.body.provider;
+
+    if (provider === "sandbox")
+      req.body =
+        (await getRandomDoc(User, { provider: "sandbox" })) || req.body;
+
     const conditions = [{ email: req.body.placeholder || req.body.email }];
 
     if (req.body.username && !req.body.provider)
@@ -219,8 +230,6 @@ export const signin = async (req, res, next) => {
       $or: conditions,
     });
 
-    const provider = req.body.provider;
-
     const err = createError(
       "Email or password is incorrect",
       400,
@@ -228,6 +237,10 @@ export const signin = async (req, res, next) => {
     );
 
     switch (provider) {
+      case "sandbox":
+        if (!user)
+          throw "We're sorry, but you can't log in as a test user at the moment. Please create a new account and log in.";
+        break;
       case "google":
         if (user) {
           if (provider !== user.provider)

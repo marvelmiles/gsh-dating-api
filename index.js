@@ -11,6 +11,8 @@ import {
 import authRouter from "./routers/auth";
 import miscRouter from "./routers/misc";
 import userRouter from "./routers/user";
+import { connectAndInsertDocs } from "./config/db";
+import testUsers from "./config/data/testUsers";
 
 // CONFIGURATIONS
 
@@ -47,3 +49,5 @@ app
 const port = process.env.PORT || 10000;
 
 app.listen(port, (_) => console.log(`Server started on port ${port}..`));
+
+// connectAndInsertDocs(testUsers);

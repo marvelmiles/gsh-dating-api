@@ -1,6 +1,10 @@
 import { getAll } from "../utils";
 import { deleteFile } from "../utils/file-handlers";
-import { createSuccessBody, safeParseJSON } from "../utils/normalizers";
+import {
+  createSuccessBody,
+  getMediaProp,
+  safeParseJSON,
+} from "../utils/normalizers";
 import { createSearchQuery } from "../utils/serializers";
 import { appendUserKeyValue } from "../utils/user";
 import { isObject } from "../utils/validators";
@@ -121,12 +125,6 @@ export const updateProfileCover = async (req, res, next) => {
         file && delUrl.push(file.url);
       }
     }
-
-    const getMediaProp = (file) => ({
-      mimetype: file.mimetype,
-      size: file.size,
-      url: file.publicUrl,
-    });
 
     if (updateIndex) {
       if (!isObject(updateIndex))

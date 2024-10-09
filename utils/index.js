@@ -108,3 +108,34 @@ export const getClientUrl = (req = "", fullUrl = false) => {
 
   return origin.endsWith("/") ? origin.slice(0, origin.length - 1) : origin;
 };
+
+export const getRandomDoc = async (model, $match) => {
+  const docs = await model.aggregate([{ $match }, { $sample: { size: 1 } }]);
+  return docs[0];
+};
+
+export function getRandomNumber(min = 0, max = Infinity, fixed = 0) {
+  const randomNum = Math.random() * (max - min) + min;
+  return fixed ? parseFloat(randomNum.toFixed(2)) : Math.floor(randomNum);
+}
+
+export function getRandomElement(arr = [], length = 1, unique = true) {
+  const elems = unique ? [...new Set(arr)] : arr;
+
+  if (length === 1) return elems[0];
+
+  const result = [];
+
+  const usedIndices = new Set();
+
+  while (result.length < length && result.length < elems.length) {
+    const randomIndex = Math.floor(Math.random() * elems.length);
+
+    if (!usedIndices.has(randomIndex)) {
+      result.push(elems[randomIndex]);
+      usedIndices.add(randomIndex);
+    }
+  }
+
+  return result;
+}
