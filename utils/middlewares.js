@@ -187,7 +187,7 @@ export const selectDatabase = (req, res, next) => {
 
     req.isBreezeOrigin = isBreeze;
 
-    const { db, models } = connectToDatabase(isBreeze);
+    const { db, models } = connectToDatabase({ isBreeze });
 
     req.dbModels = models;
     req.dbConnection = db;

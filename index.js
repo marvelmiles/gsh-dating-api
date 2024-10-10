@@ -50,4 +50,6 @@ const port = process.env.PORT || 10000;
 
 app.listen(port, (_) => console.log(`Server started on port ${port}..`));
 
-// connectAndInsertDocs(testUsers);
+// connectAndInsertDocs(testUsers, {
+//   isProd: true,
+// });

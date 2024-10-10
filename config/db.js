@@ -6,7 +6,14 @@ import { console500MSG } from "../utils/error";
 const connections = {};
 const dbModels = {};
 
-export const connectToDatabase = (isBreeze) => {
+export const connectToDatabase = (
+  options = {
+    isBreeze: false,
+    isProd: false,
+  }
+) => {
+  const { isBreeze = false, isProd = isProdMode } = options;
+
   const conKey = isBreeze ? "breeze" : "soulmater";
 
   let db, models;
@@ -18,7 +25,7 @@ export const connectToDatabase = (isBreeze) => {
     // Establish a new connection
     const connection = mongoose.createConnection(
       process.env[
-        isProdMode
+        isProd
           ? isBreeze
             ? "MONGODB_PROD_URI"
             : "MONGODB_PROD_TEST_URI"
@@ -41,9 +48,15 @@ export const connectToDatabase = (isBreeze) => {
   return { db, models };
 };
 
-export const connectAndInsertDocs = async (docs = [], isBreeze = false) => {
+export const connectAndInsertDocs = async (
+  docs = [],
+  options = {
+    isBreeze: false,
+    isProd: false,
+  }
+) => {
   try {
-    const { models } = connectToDatabase(isBreeze);
+    const { models } = connectToDatabase(options);
 
     await models.User.insertMany(docs);
   } catch (err) {
