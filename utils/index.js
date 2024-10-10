@@ -122,7 +122,7 @@ export function getRandomNumber(min = 0, max = Infinity, fixed = 0) {
 export function getRandomElement(arr = [], length = 1, unique = true) {
   const elems = unique ? [...new Set(arr)] : arr;
 
-  if (length === 1) return elems[0];
+  if (length === 1) return elems[Math.floor(Math.random() * elems.length)];
 
   const result = [];
 

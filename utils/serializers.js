@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { toObj } from ".";
 import { generateBcryptHash, generateUUID } from "./auth";
 import { isObjectId } from "./validators";
@@ -91,27 +92,69 @@ export const createSearchQuery = (query = {}, reason = "users") => {
         ...(mandatoryQ ? toObj(rules) : {}),
         ...(mandatoryQ ? toObj(bioRules) : {}),
         ...(mandatoryFilter ? toObj(bioFilterRules) : {}),
-        $or: query.searchUid
-          ? query.searchUid
-              .split(" ")
-              .filter((id) => isObjectId(id))
-              .map((id) => ({
-                _id: {
-                  $ne: id,
-                },
-              }))
-          : [],
+        $or: [],
       };
+
+      if (query.searchUid)
+        $match._id = {
+          $nin: query.searchUid
+            .split(" ")
+            .filter((id) => isObjectId(id))
+            .map((id) => ({
+              _id: id,
+            })),
+        };
 
       if (!mandatoryFilter) $match.$or = $match.$or.concat(bioFilterRules);
 
       if (!mandatoryQ) $match.$or = $match.$or.concat(rules, bioRules);
 
-      if (!$match.$or.length) delete $match.$or;
-
       const pipeRules = {
         $match,
       };
+
+      const setRelevanceProp = (path) => {
+        pipeRules.overrideSort = true;
+
+        pipeRules.$sort = { ...pipeRules.$sort, [path]: 1, _id: -1 };
+
+        pipeRules.$project = { ...pipeRules.$project, [path]: 0 };
+      };
+
+      if ($match.$or.length) {
+        const path = "matchScore";
+
+        pipeRules.$addFields = {
+          ...pipeRules.$addFields,
+          [path]: {
+            $switch: {
+              branches: $match.$or.map((obj) => {
+                return {
+                  case: {
+                    $regexMatch: {
+                      input: {
+                        $ifNull: [
+                          {
+                            $getField: Object.keys(obj)[0] || "",
+                          },
+                          "",
+                        ],
+                      },
+                      regex: new RegExp(query.q, "i"),
+                    },
+                  },
+                  then: 1,
+                };
+              }),
+              default: 0,
+            },
+          },
+        };
+
+        setRelevanceProp(path);
+      }
+
+      if (!$match.$or.length) delete $match.$or;
 
       if (query.sortRelevance) {
         for (const key in query.sortRelevance) {
@@ -136,19 +179,18 @@ export const createSearchQuery = (query = {}, reason = "users") => {
               },
             };
 
-            pipeRules.$sort = {
-              [priorityKey]: 1,
-              id: -1,
-            };
-
-            pipeRules.overrideSort = true;
-
-            pipeRules.$project = { [priorityKey]: 0 };
+            setRelevanceProp(priorityKey);
           }
         }
       }
 
-      console.log(pipeRules.$match, " search serializer...");
+      console.log(
+        pipeRules.$match.$or,
+        pipeRules.$addFields?.matchScore &&
+          pipeRules.$addFields.matchScore.$switch.branches,
+        query.q,
+        " search serializer..."
+      );
 
       return pipeRules;
   }
