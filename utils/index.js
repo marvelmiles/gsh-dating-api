@@ -3,56 +3,60 @@ import { isObject } from "./validators";
 
 export const getAll = async (model, reqQuery, pipeRules = {}) => {
   return new Promise(async (resolve, reject) => {
-    const page = parseInt(reqQuery.page) || 1;
+    try {
+      const page = parseInt(reqQuery.page) || 1;
 
-    const totalDocs = await model.countDocuments(pipeRules.$match);
+      const totalDocs = await model.countDocuments(pipeRules.$match);
 
-    const size =
-      reqQuery.limit === "all" ? totalDocs : Number(reqQuery.limit) || 10;
+      const size =
+        reqQuery.limit === "all" ? totalDocs : Number(reqQuery.limit) || 10;
 
-    const totalPages = Math.ceil(totalDocs / size);
+      const totalPages = Math.ceil(totalDocs / size);
 
-    let pipeline = [
-      { $match: pipeRules.$match },
-      {
-        $addFields: {
-          ...pipeRules.$addFields,
-          id: "$_id",
+      let pipeline = [
+        { $match: pipeRules.$match },
+        {
+          $addFields: {
+            ...pipeRules.$addFields,
+            id: "$_id",
+          },
         },
-      },
-      {
-        $sort: pipeRules.overrideSort
-          ? pipeRules.$sort
-          : { id: -1, ...pipeRules.$sort },
-      },
-      { $skip: (page - 1) * size },
-      { $limit: size },
-      {
-        $project: {
-          ...pipeRules.$project,
-          _id: 0,
-          password: 0,
+        {
+          $sort: pipeRules.overrideSort
+            ? pipeRules.$sort
+            : { id: -1, ...pipeRules.$sort },
         },
-      },
-    ];
+        { $skip: (page - 1) * size },
+        { $limit: size },
+        {
+          $project: {
+            ...pipeRules.$project,
+            _id: 0,
+            password: 0,
+          },
+        },
+      ];
 
-    const randomize = reqQuery.type === "similar";
+      const randomize = reqQuery.type === "similar";
 
-    // if (randomize) pipeline.push({ $sample: { size: size } });
+      // if (randomize) pipeline.push({ $sample: { size: size } });
 
-    const data = await model.aggregate(pipeline);
+      const data = await model.aggregate(pipeline);
 
-    setTimeout(
-      () => {
-        return resolve({
-          totalDocs,
-          totalPages,
-          currentPage: page,
-          data,
-        });
-      },
-      isProdMode ? 0 : 3000
-    );
+      setTimeout(
+        () => {
+          return resolve({
+            totalDocs,
+            totalPages,
+            currentPage: page,
+            data,
+          });
+        },
+        isProdMode ? 0 : 3000
+      );
+    } catch (err) {
+      reject(err);
+    }
   });
 };
 
