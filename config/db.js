@@ -32,7 +32,8 @@ export const connectToDatabase = (
           : isBreeze
           ? "MONGODB_DEV_URI"
           : "MONGODB_DEV_TEST_URI"
-      ]
+      ],
+      { serverSelectionTimeoutMS: 60000, connectTimeoutMS: 30000 }
     );
 
     connections[conKey] = connection;
@@ -43,23 +44,30 @@ export const connectToDatabase = (
 
     db = connection;
     models = dbModels[conKey];
+
+    db.on("error", (err) => {
+      console500MSG(err, "CONNECT_INSERT_DOCS");
+    });
   }
 
   return { db, models };
 };
 
-export const connectAndInsertDocs = async (
+export const connectAndInsertDocs = (
   docs = [],
   options = {
     isBreeze: false,
     isProd: false,
   }
 ) => {
-  try {
-    const { models } = connectToDatabase(options);
+  const { models, db } = connectToDatabase(options);
 
-    await models.User.insertMany(docs);
-  } catch (err) {
-    console500MSG(err, "CONNECT_INSERT_DOCS");
-  }
+  db.on("connected", async () => {
+    console.log("db connected...");
+    try {
+      await models.User.insertMany(docs);
+    } catch (err) {
+      console500MSG(err, "CONNECT_INSERT_DOCS");
+    }
+  });
 };
