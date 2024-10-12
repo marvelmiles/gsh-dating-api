@@ -1,7 +1,6 @@
 export const allowedOrigins = [
   "https://www.breezeup.me",
-  "https://sgh-dating-ui.vercel.app",
-  "https://sgh-dating-app.netlify.app",
+  "https://soulmater.vercel.app",
   "http://localhost:3000",
   "https://gsh-rouge.vercel.app",
   "http://sgh-dating-api.glitch.me",
