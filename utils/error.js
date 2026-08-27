@@ -56,8 +56,6 @@ export const createError = (
   }
 
   const setDefault = () => {
-    console.log("def");
-
     err.message =
       typeof message === "string" || status
         ? message.message || message
@@ -78,16 +76,6 @@ export const createError = (
       message.code ||
       "ERROR_CODE";
   };
-
-  console.log(
-    "[SERVER_ERROR: ERORR_INFO]",
-    message.type,
-    message.name,
-    message.code,
-    message.message || message,
-    message.url,
-    "__==__"
-  );
 
   const keyName = (
     message.type ||

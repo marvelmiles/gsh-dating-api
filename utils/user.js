@@ -1,4 +1,4 @@
-import { appendKeyValue } from ".";
+import { appendKeyValue, getRandomDoc } from ".";
 import { generateUUID } from "./auth";
 import { v4 as uuid } from "uuid";
 
@@ -48,4 +48,32 @@ export const generateUsername = async (User, username = "user") => {
   }
 
   throw "Exceeded maximum attempts to generate a unique username";
+};
+
+export const resolveSignInConditions = ({
+  placeholder,
+  email,
+  username,
+  provider,
+}) => {
+  const conditions = [];
+
+  const emailIdentifier = placeholder || email;
+
+  if (emailIdentifier) conditions.push({ email: emailIdentifier });
+
+  const usernameIdentifier = placeholder || username;
+
+  if (!provider && usernameIdentifier)
+    conditions.push({ username: usernameIdentifier });
+
+  return conditions;
+};
+
+export const findSandboxUser = async (User, email) => {
+  if (email) return User.findOne({ email, provider: "sandbox" });
+
+  const randomUser = await getRandomDoc(User, { provider: "sandbox" });
+
+  return randomUser ? User.findById(randomUser._id) : null;
 };

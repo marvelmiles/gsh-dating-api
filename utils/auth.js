@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
@@ -17,7 +16,6 @@ export const generateUUID = (format = "auth-code") => {
   switch (format) {
     case "auth-code":
       return Math.floor(1000 + Math.random() * 9000);
-    // return crypto.randomInt(100000, 1000000).toString();
     default:
       return;
   }

@@ -1,7 +1,5 @@
 import admin from "firebase-admin";
-import dotenv from "dotenv";
-
-dotenv.config();
+import "./env";
 
 export const FIREBASE_BUCKET_NAME = "gs://caltex-api.appspot.com/";
 

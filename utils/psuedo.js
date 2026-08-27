@@ -1,7 +1,6 @@
 import { getRandomElement } from ".";
 
 export function generateNigerianPhoneNumber() {
-  // Nigerian phone numbers start with a digit from 7 to 9
   const prefixes = [
     "701",
     "702",
@@ -48,16 +47,13 @@ export function generateNigerianPhoneNumber() {
     "990",
   ];
 
-  // Choose a random prefix from the list
   const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
 
-  // Generate the remaining 7 digits (0-9)
   let remainingDigits = "";
   for (let i = 0; i < 7; i++) {
     remainingDigits += Math.floor(Math.random() * 10).toString();
   }
 
-  // Combine to form the full phone number
   const phoneNumber = `+234 ${prefix} ${remainingDigits.slice(
     0,
     3

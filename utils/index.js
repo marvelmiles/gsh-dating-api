@@ -37,10 +37,6 @@ export const getAll = async (model, reqQuery, pipeRules = {}) => {
         },
       ];
 
-      const randomize = reqQuery.type === "similar";
-
-      // if (randomize) pipeline.push({ $sample: { size: size } });
-
       const data = await model.aggregate(pipeline);
 
       setTimeout(

@@ -21,8 +21,6 @@ export const serializeUserToken = async (
     })
   );
 
-  console.log("new u token...", token);
-
   return token;
 };
 
@@ -63,8 +61,6 @@ export const createSearchQuery = (query = {}, reason = "users") => {
             },
           ]
         : [];
-
-      console.log(query, "query ser");
 
       const bioRules = query.bio
         ? (Array.isArray(query.bio) ? query.bio : query.bio.split(" ")).map(
@@ -183,14 +179,6 @@ export const createSearchQuery = (query = {}, reason = "users") => {
           }
         }
       }
-
-      console.log(
-        pipeRules.$match.$or,
-        pipeRules.$addFields?.matchScore &&
-          pipeRules.$addFields.matchScore.$switch.branches,
-        query.q,
-        " search serializer..."
-      );
 
       return pipeRules;
   }

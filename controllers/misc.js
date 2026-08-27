@@ -1,5 +1,4 @@
 import { MAIL_CONST } from "../config/constants";
-import User from "../models/User";
 import { getAll } from "../utils";
 import { sendMail } from "../utils/file-handlers";
 import { createSuccessBody } from "../utils/normalizers";
@@ -38,6 +37,8 @@ export const mailFeedback = async (req, res, next) => {
 
 export const search = async (req, res, next) => {
   try {
+    const User = req.dbModels.User;
+
     const result = {};
 
     for (const key of req.query.select

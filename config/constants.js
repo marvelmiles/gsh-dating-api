@@ -1,3 +1,5 @@
+import { isProductionEnvironment } from "./env";
+
 export const allowedOrigins = [
   "https://www.breezeup.me",
   "https://soulmater.vercel.app",
@@ -7,9 +9,7 @@ export const allowedOrigins = [
   "http://localhost:10000",
 ];
 
-export const isProdMode =
-  process.env.NODE_ENV === "production" ||
-  process.env.ENVIRONMENT === "production";
+export const isProdMode = isProductionEnvironment;
 
 export const SERVER_ORIGIN = isProdMode
   ? "https://sgh-dating-api.glitch.me"

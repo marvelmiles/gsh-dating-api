@@ -29,10 +29,14 @@ import { serializeUserToken } from "../utils/serializers.js";
 import {
   appendKeyValue,
   getClientUrl,
-  getRandomDoc,
   setFutureDate,
 } from "../utils/index.js";
-import { generateUsername, getUserEssentials } from "../utils/user.js";
+import {
+  findSandboxUser,
+  generateUsername,
+  getUserEssentials,
+  resolveSignInConditions,
+} from "../utils/user.js";
 
 const mailVerificationToken = async (
   User,
@@ -140,8 +144,6 @@ export const signup = async (req, res, next) => {
       $or: conditions,
     });
 
-    console.log(conditions, body, user, "ignup");
-
     if (user)
       throw createError(
         HTTP_MSG_USER_EXISTS,
@@ -154,14 +156,7 @@ export const signup = async (req, res, next) => {
     user = await new User(body).save();
 
     res.json(createSuccessBody(user, "Account setup successful!"));
-
-    // res.json(
-    //   body.provider
-    //     ? createSuccessBody(user, "Account setup successful!")
-    //     : await mailVerificationToken(user)
-    // );
   } catch (err) {
-    console.log(err?.message, err?.status);
     next(err);
   }
 };
@@ -215,20 +210,21 @@ export const signin = async (req, res, next) => {
 
     const provider = req.body.provider;
 
+    let user;
+
     if (provider === "sandbox")
-      req.body =
-        (await getRandomDoc(User, { provider: "sandbox" })) || req.body;
+      user = await findSandboxUser(
+        User,
+        req.body.placeholder || req.body.email
+      );
+    else {
+      const conditions = resolveSignInConditions(req.body);
 
-    const conditions = [{ email: req.body.placeholder || req.body.email }];
+      if (!conditions.length)
+        throw "Invalid request. Expect an email, username or placeholder";
 
-    if (req.body.username && !req.body.provider)
-      conditions.push({
-        username: req.body.placeholder || req.body.username,
-      });
-
-    let user = await User.findOne({
-      $or: conditions,
-    });
+      user = await User.findOne({ $or: conditions });
+    }
 
     const err = createError(
       "Email or password is incorrect",
@@ -314,8 +310,6 @@ export const signin = async (req, res, next) => {
 
 export const signout = async (req, res, next) => {
   try {
-    console.log("singed out...");
-
     const User = req.dbModels.User;
 
     deleteCookie(COOKIE_KEY_ACCESS_TOKEN, res);
@@ -342,7 +336,11 @@ export const signout = async (req, res, next) => {
 
 export const userExists = async (req, res, next) => {
   try {
-    await findUser(req, res);
+    try {
+      await findUser(req, res);
+    } catch {
+      req.user = null;
+    }
 
     res.json(createSuccessBody(!!req.user));
   } catch (err) {
@@ -413,15 +411,12 @@ export const resetPwd = async (req, res, next) => {
 
     res.json(createSuccessBody(undefined, "Password reset successful"));
   } catch (err) {
-    console.log(err.message, "gk");
     next(err);
   }
 };
 
 export const refreshTokens = async (req, res, next) => {
   try {
-    console.log("refresh-tokens");
-
     verifyJWToken(req, {
       applyRefresh: true,
     });

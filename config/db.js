@@ -10,7 +10,7 @@ export const connectToDatabase = (
   options = {
     isBreeze: false,
     isProd: false,
-  }
+  },
 ) => {
   const { isBreeze = false, isProd = isProdMode } = options;
 
@@ -22,7 +22,6 @@ export const connectToDatabase = (
     db = connections[conKey];
     models = dbModels[conKey];
   } else {
-    // Establish a new connection
     const connection = mongoose.createConnection(
       process.env[
         isProd
@@ -30,10 +29,10 @@ export const connectToDatabase = (
             ? "MONGODB_PROD_URI"
             : "MONGODB_PROD_TEST_URI"
           : isBreeze
-          ? "MONGODB_DEV_URI"
-          : "MONGODB_DEV_TEST_URI"
+            ? "MONGODB_DEV_URI"
+            : "MONGODB_DEV_TEST_URI"
       ],
-      { serverSelectionTimeoutMS: 60000, connectTimeoutMS: 30000 }
+      { serverSelectionTimeoutMS: 60000, connectTimeoutMS: 30000 },
     );
 
     connections[conKey] = connection;
@@ -46,28 +45,9 @@ export const connectToDatabase = (
     models = dbModels[conKey];
 
     db.on("error", (err) => {
-      console500MSG(err, "CONNECT_INSERT_DOCS");
+      console500MSG(err, "DATABASE_CONNECTION");
     });
   }
 
   return { db, models };
-};
-
-export const connectAndInsertDocs = (
-  docs = [],
-  options = {
-    isBreeze: false,
-    isProd: false,
-  }
-) => {
-  const { models, db } = connectToDatabase(options);
-
-  db.on("connected", async () => {
-    console.log("db connected...");
-    try {
-      await models.User.insertMany(docs);
-    } catch (err) {
-      console500MSG(err, "CONNECT_INSERT_DOCS");
-    }
-  });
 };

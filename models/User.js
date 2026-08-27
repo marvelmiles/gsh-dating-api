@@ -2,21 +2,18 @@ import { isEmail, isPassword } from "../utils/validators";
 import bcrypt from "bcrypt";
 import { SERVER_ORIGIN } from "../config/constants";
 import { invalidate } from "../utils/error";
-import { Schema, Types, model } from "mongoose";
+import { Schema, Types } from "mongoose";
 
 export const userSchema = new Schema(
   {
     lastname: {
       type: String,
-      // required: "Your lastname is required",
     },
     firstname: {
       type: String,
-      // required: "Your firstname is required",
     },
     username: {
       type: String,
-      // required: "Your username or nickname is required",
     },
     email: {
       type: String,
@@ -38,14 +35,6 @@ export const userSchema = new Schema(
         "Your password is required",
       ],
       set(v) {
-        console.log(
-          "val set pwd..",
-          v,
-          v?.length,
-          this.invalidate,
-          this.provider
-        );
-
         if (this.provider) return "";
 
         if (!v) throw invalidate("Your password is required", "password");
@@ -168,5 +157,3 @@ userSchema.virtual("expired").get(function () {
     new Date().getTime() >= new Date(this.accountExpires).getTime()
   );
 });
-
-// export default model("user", userSchema);
