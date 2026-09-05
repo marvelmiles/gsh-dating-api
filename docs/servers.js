@@ -1,10 +1,10 @@
-import { SERVER_ORIGIN, isProdMode } from "../config/constants";
-import { serverPort } from "../config/env";
+import {
+  LOCAL_SERVER_ORIGIN,
+  PRODUCTION_SERVER_ORIGIN,
+  SERVER_ORIGIN,
+  isProdMode,
+} from "../config/constants";
 import { getClientUrl } from "../utils";
-
-export const PRODUCTION_SERVER_URL = "https://sgh-dating-api.glitch.me";
-
-export const LOCAL_SERVER_URL = `http://localhost:${serverPort}`;
 
 const isProductionUrl = (url = "") =>
   !/localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]/i.test(url);
@@ -16,15 +16,15 @@ export const buildServers = (requestOrigin = "") => {
     ? getClientUrl(requestOrigin)
     : isProdMode
     ? SERVER_ORIGIN
-    : LOCAL_SERVER_URL;
+    : LOCAL_SERVER_ORIGIN;
 
   const production = buildServerEntry(
-    PRODUCTION_SERVER_URL,
-    "Production - live Glitch deployment"
+    PRODUCTION_SERVER_ORIGIN,
+    "Production - live Render deployment"
   );
 
   const local = buildServerEntry(
-    LOCAL_SERVER_URL,
+    LOCAL_SERVER_ORIGIN,
     "Local - development server on this machine"
   );
 

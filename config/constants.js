@@ -1,19 +1,31 @@
-import { isProductionEnvironment } from "./env";
+import { isProductionEnvironment, serverPort } from "./env";
+
+export const PRODUCTION_SERVER_ORIGIN = "https://gsh-dating-api.onrender.com";
+
+export const LOCAL_SERVER_ORIGIN = `http://localhost:${serverPort}`;
+
+export const PRODUCTION_SERVER_HOST = new URL(PRODUCTION_SERVER_ORIGIN).host;
+
+export const BREEZE_ORIGIN_KEYWORDS = [
+  "breezeup",
+  "gsh-rouge",
+  PRODUCTION_SERVER_HOST,
+];
 
 export const allowedOrigins = [
   "https://www.breezeup.me",
   "https://soulmater.vercel.app",
   "http://localhost:3000",
   "https://gsh-rouge.vercel.app",
-  "http://sgh-dating-api.glitch.me",
-  "http://localhost:10000",
+  PRODUCTION_SERVER_ORIGIN,
+  LOCAL_SERVER_ORIGIN,
 ];
 
 export const isProdMode = isProductionEnvironment;
 
 export const SERVER_ORIGIN = isProdMode
-  ? "https://sgh-dating-api.glitch.me"
-  : "http://localhost:10000";
+  ? PRODUCTION_SERVER_ORIGIN
+  : LOCAL_SERVER_ORIGIN;
 
 export const APP_NAME = "SGH Dating";
 

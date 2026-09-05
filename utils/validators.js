@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { BREEZE_ORIGIN_KEYWORDS } from "../config/constants";
 import { replaceString } from "./serializers";
 
 export const isEmail = (str) => {
@@ -44,10 +45,8 @@ export const isPassword = (password) => {
   return msg;
 };
 
-export const isBreezeOrigin = (CLIENT_ORIGIN = "") => {
-  return (
-    CLIENT_ORIGIN.toLowerCase().indexOf("breezeup") > -1 ||
-    CLIENT_ORIGIN.toLowerCase().indexOf("gsh-rouge") > -1 ||
-    CLIENT_ORIGIN.toLowerCase().indexOf("sgh-dating-api.glitch.me") > -1
-  );
+export const isBreezeOrigin = (clientOrigin = "") => {
+  const origin = clientOrigin.toLowerCase();
+
+  return BREEZE_ORIGIN_KEYWORDS.some((keyword) => origin.includes(keyword));
 };

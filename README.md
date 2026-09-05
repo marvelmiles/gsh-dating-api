@@ -8,10 +8,10 @@ A single deployment serves two front ends. The request origin decides which data
 
 | What | Where |
 | --- | --- |
-| API base URL (production) | https://sgh-dating-api.glitch.me/api |
+| API base URL (production) | https://gsh-dating-api.onrender.com/api |
 | API base URL (local) | http://localhost:10000/api |
-| Interactive API reference | https://sgh-dating-api.glitch.me/docs |
-| OpenAPI document | https://sgh-dating-api.glitch.me/docs/openapi.json |
+| Interactive API reference | https://gsh-dating-api.onrender.com/docs |
+| OpenAPI document | https://gsh-dating-api.onrender.com/docs/openapi.json |
 | Breezeup front end | https://www.breezeup.me |
 | Soulmater front end | https://soulmater.vercel.app |
 | Repository | https://github.com/marvelmiles/gsh-dating-api |
@@ -36,7 +36,7 @@ Node.js, Express, MongoDB with Mongoose, Firebase Admin for storage, Nodemailer 
 
 ## Getting started
 
-Requirements: Node.js 16 or newer, and a MongoDB instance you can reach, either locally or on Atlas.
+Requirements: Node.js 23.9.0, the version pinned in `engines`, and a MongoDB instance you can reach, either locally or on Atlas.
 
 ```bash
 git clone https://github.com/marvelmiles/gsh-dating-api.git
@@ -225,12 +225,16 @@ The OpenAPI document is assembled at request time rather than written by hand as
 
 ## Deployment
 
-The production instance runs on Glitch at https://sgh-dating-api.glitch.me. Any Node host works.
+The production instance runs on Render at https://gsh-dating-api.onrender.com. Any Node host works.
 
-1. Set every variable from the table above in the host's environment, with `NODE_ENV=production`.
-2. Point `MONGODB_PROD_URI` and `MONGODB_PROD_TEST_URI` at the production clusters and allow the host's egress addresses through the database firewall.
-3. Add the deployed front end origins to `allowedOrigins` in `config/constants.js`.
-4. Deploy and run `npm start`. The build step is `npm install`.
+1. Create a web service from this repository. The build command is `npm install` and the start command is `npm start`.
+2. Set every variable from the table above in the host's environment, with `NODE_ENV=production`. Render injects `PORT` on its own, so leave that one unset.
+3. Point `MONGODB_PROD_URI` and `MONGODB_PROD_TEST_URI` at the production clusters and allow the host's egress addresses through the database firewall. On Atlas that means adding Render's static outbound addresses to the IP access list.
+4. Add the deployed front end origins to `allowedOrigins` in `config/constants.js`.
 5. Seed the production test accounts once, if you want them there, with `npm run seed -- --prod`.
 
-Session cookies are issued with `Secure` and `SameSite=None`, so the API and the front end must both be served over HTTPS in production. The app trusts one proxy hop, which is what Glitch and most platform hosts put in front of it.
+Changing the production host means changing one line: `PRODUCTION_SERVER_ORIGIN` in `config/constants.js`. The allow list, the referral links, the tenant routing rule and the server dropdown in the docs all derive from it.
+
+Session cookies are issued with `Secure` and `SameSite=None`, so the API and the front end must both be served over HTTPS in production. The app trusts one proxy hop, which is what Render and most platform hosts put in front of it.
+
+On Render's free instance type the service sleeps after a period of inactivity, so the first request after an idle spell can take up to about a minute while it wakes. Give the sign in screen a generous timeout, or move to a paid instance type if that latency is not acceptable.

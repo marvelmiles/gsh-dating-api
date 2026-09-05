@@ -1,3 +1,8 @@
+import {
+  LOCAL_SERVER_ORIGIN,
+  PRODUCTION_SERVER_ORIGIN,
+} from "../config/constants";
+
 export const gettingStartedDescription = `
 The REST API behind the SGH dating platform. It covers account creation, cookie based sessions, profile management, media galleries on Firebase and a relevance ranked discovery search.
 
@@ -7,8 +12,8 @@ Every path on this page is prefixed with \`/api\`. Pick your environment from th
 
 | Environment | Base URL |
 | --- | --- |
-| Local | \`http://localhost:10000/api\` |
-| Production | \`https://sgh-dating-api.glitch.me/api\` |
+| Local | \`${LOCAL_SERVER_ORIGIN}/api\` |
+| Production | \`${PRODUCTION_SERVER_ORIGIN}/api\` |
 
 ## Response envelope
 

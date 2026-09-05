@@ -1,3 +1,5 @@
+import { PRODUCTION_SERVER_ORIGIN } from "../../config/constants";
+
 const objectIdExample = "66c9f0b1a4d2e51f3c7b8a10";
 
 const timestamp = {
@@ -137,7 +139,7 @@ export const schemas = {
         type: "string",
         format: "uri",
         description: "Virtual field built from the server origin.",
-        example: "https://sgh-dating-api.glitch.me?ref=4821",
+        example: `${PRODUCTION_SERVER_ORIGIN}?ref=4821`,
       },
       referrals: {
         type: "array",
